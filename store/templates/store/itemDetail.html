@@ -20,7 +20,16 @@
         {% endif %}
         
         <br>
-        <button type="button" disabled>カートに入れる（準備中）</button>
+        {% if request.session.login_user_id %}
+            <form action="{% url 'store:add_to_cart' item.item_id %}" method="POST" style="background-color: #f9f9f9; padding: 10px; border: 1px solid #ddd; display: inline-block;">
+                {% csrf_token %}
+                <label>数量:</label>
+                <input type="number" name="amount" value="1" min="1" max="{{ item.stock }}">
+                <button type="submit">カートに入れる</button>
+            </form>
+        {% else %}
+            <p style="color: red; font-weight: bold;">※カートに入れるには<a href="{% url 'accounts:login' %}">ログイン</a>が必要です。</p>
+        {% endif %}
     </div>
 
     <br>
