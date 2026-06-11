@@ -6,6 +6,13 @@
 </head>
 <body>
     <h1>商品一覧・検索画面</h1>
+
+    {% if request.session.login_user_id %}
+        <p style="color: blue;">ログイン中: {{ request.session.login_user_id }} さん</p>
+    {% else %}
+        <p><a href="{% url 'accounts:login' %}">ログインはこちら</a></p>
+    {% endif %}
+
     <form action="{% url 'store:searchResult' %}" method="GET" style="margin-bottom: 20px; padding: 10px; background-color: #f0f0f0;">
         <label>キーワード:</label>
         <input type="text" name="keyword" placeholder="商品名で検索">
@@ -20,6 +27,7 @@
         
         <button type="submit">検索する</button>
     </form>
+
     <div class="item-container">
         {% for item in items %}
             <div style="border: 1px solid #ccc; padding: 10px; margin-bottom: 10px;">
