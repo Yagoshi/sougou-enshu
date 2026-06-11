@@ -12,7 +12,20 @@
             <div style="border: 1px solid #ccc; padding: 10px; margin-bottom: 10px;">
                 <h2>{{ cart_item.item.name }}</h2>
                 <p>単価: {{ cart_item.item.price }}円</p>
-                <p>数量: {{ cart_item.amount }}個</p>
+                <p>現在の在庫: {{ cart_item.item.stock }}個</p>
+                
+                <form action="{% url 'store:update_cart' cart_item.item.item_id %}" method="POST" style="display: inline-block;">
+                    {% csrf_token %}
+                    <label>数量:</label>
+                    <input type="number" name="amount" value="{{ cart_item.amount }}" min="1" max="{{ cart_item.item.stock }}">
+                    <button type="submit">変更</button>
+                </form>
+                
+                <form action="{% url 'store:delete_cart' cart_item.item.item_id %}" method="POST" style="display: inline-block; margin-left: 10px;">
+                    {% csrf_token %}
+                    <button type="submit" style="color: red;">削除</button>
+                </form>
+
                 <p>小計: {% widthratio cart_item.item.price 1 cart_item.amount %}円</p>
             </div>
         {% empty %}
@@ -25,6 +38,9 @@
     <br>
     <a href="{% url 'store:main' %}">買い物を続ける</a>
     <br><br>
-    <button disabled>レジへ進む（準備中）</button>
+    
+    {% if cart_items %}
+        <a href="{% url 'store:checkout' %}" style="background-color: orange; padding: 10px; text-decoration: none; color: black; font-weight: bold;">購入手続きへ進む</a>
+    {% endif %}
 </body>
 </html>

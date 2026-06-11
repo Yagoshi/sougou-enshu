@@ -109,8 +109,6 @@ def updateUserCommit(request):
     del request.session['update_data']
     return render(request, 'accounts/updateUserCommit.html')
 
-# --- ここから下が退会機能の追記部分 ---
-
 # 退会確認画面 (M09)
 def withdrawConfirm(request):
     user_id = request.session.get('login_user_id')
