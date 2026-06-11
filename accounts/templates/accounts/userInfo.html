@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <title>会員情報確認</title>
+</head>
+<body>
+    <h1>会員情報確認</h1>
+    
+    <div style="border: 1px solid #ccc; padding: 20px; margin-bottom: 20px;">
+        <p><strong>会員ID:</strong> {{ user.user_id }}</p>
+        <p><strong>お名前:</strong> {{ user.name }}</p>
+        <p><strong>ご住所:</strong> {{ user.address }}</p>
+    </div>
+
+    <ul>
+        <li><a href="{% url 'accounts:updateUser' %}">会員情報を変更する</a></li>
+        <li><a href="{% url 'accounts:withdrawConfirm' %}">退会手続きはこちら</a></li>
+    </ul>
+
+    <br>
+    <a href="{% url 'store:main' %}">トップページに戻る</a>
+</body>
+</html>
