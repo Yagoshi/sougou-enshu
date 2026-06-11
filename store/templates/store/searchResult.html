@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <title>検索結果</title>
+</head>
+<body>
+    <h1>検索結果</h1>
+    
+    {% if keyword %}
+        <p>「{{ keyword }}」の検索結果</p>
+    {% endif %}
+
+    <div class="item-container">
+        {% for item in results %}
+            <div style="border: 1px solid #ccc; padding: 10px; margin-bottom: 10px;">
+                <h2><a href="{% url 'store:itemDetail' item.item_id %}">{{ item.name }}</a></h2>
+                <p>メーカー: {{ item.manufacturer }}</p>
+                <p>価格: {{ item.price }}円</p>
+                <p>カテゴリ: {{ item.category.name }}</p>
+            </div>
+        {% empty %}
+            <p>条件に一致する商品は見つかりませんでした。</p>
+        {% endfor %}
+    </div>
+
+    <br>
+    <a href="{% url 'store:main' %}">商品検索画面に戻る</a>
+</body>
+</html>
