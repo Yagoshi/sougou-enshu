@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <title>ショッピングカート</title>
+</head>
+<body>
+    <h1>ショッピングカート</h1>
+    
+    <div class="cart-container">
+        {% for cart_item in cart_items %}
+            <div style="border: 1px solid #ccc; padding: 10px; margin-bottom: 10px;">
+                <h2>{{ cart_item.item.name }}</h2>
+                <p>単価: {{ cart_item.item.price }}円</p>
+                <p>数量: {{ cart_item.amount }}個</p>
+                <p>小計: {% widthratio cart_item.item.price 1 cart_item.amount %}円</p>
+            </div>
+        {% empty %}
+            <p>カートに商品はありません。</p>
+        {% endfor %}
+    </div>
+    
+    <h3 style="color: #d9534f;">合計金額: {{ total_price }}円</h3>
+    
+    <br>
+    <a href="{% url 'store:main' %}">買い物を続ける</a>
+    <br><br>
+    <button disabled>レジへ進む（準備中）</button>
+</body>
+</html>
