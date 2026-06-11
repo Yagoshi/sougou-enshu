@@ -1,92 +1,123 @@
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from .models import User
-from .forms import UserForm
+from .forms import UserForm, UserUpdateForm
 
 # 会員ログイン画面 (M01)
 def login(request):
     error_message = ''
-    
     if request.method == 'POST':
-        # フォームから送信されたIDとパスワードを取得
         input_user_id = request.POST.get('user_id')
         input_password = request.POST.get('password')
-        
         try:
-            # データベースから、IDとパスワードが完全一致するユーザーを探す
             user = User.objects.get(user_id=input_user_id, password=input_password)
-            
-            # 見つかった場合（ログイン成功）：セッションに会員IDを保存
             request.session['login_user_id'] = user.user_id
-            
-            # トップページ（商品一覧）へ遷移
             return redirect('store:main')
-            
         except User.DoesNotExist:
-            # 見つからなかった場合（ログイン失敗）：エラーメッセージをセット
             error_message = '会員IDまたはパスワードが間違っています。'
-
-    # GETリクエストの時、またはログイン失敗時はログイン画面を表示
     return render(request, 'accounts/login.html', {'error_message': error_message})
 
-def userInfo(request):
-    return render(request, 'accounts/userInfo.html')
-
-def updateUser(request):
-    return render(request, 'accounts/updateUser.html')
-
-def updateUserConfirm(request):
-    return render(request, 'accounts/updateUserConfirm.html')
-
-def updateUserCommit(request):
-    return render(request, 'accounts/updateUserCommit.html')
-
-def withdrawConfirm(request):
-    return render(request, 'accounts/withdrawConfirm.html')
-
-def withdrawCommit(request):
-    return render(request, 'accounts/withdrawCommit.html')
-
-# 会員登録：入力画面 (M02)
+# 会員登録 (M02)
 def registerUser(request):
     if request.method == 'POST':
         form = UserForm(request.POST)
-        if form.is_valid():  # 入力必須チェックがOKなら
-            # データをセッションに一時保存して、確認画面へリダイレクト
+        if form.is_valid():
             request.session['register_data'] = form.cleaned_data
             return redirect('accounts:registerUserConfirm')
     else:
         form = UserForm()
-    
     return render(request, 'accounts/registerUser.html', {'form': form})
 
-# 会員登録：確認画面 (M03)
+# 会員登録確認 (M03)
 def registerUserConfirm(request):
-    # セッションからデータを取り出す
     data = request.session.get('register_data')
     if not data:
-        return redirect('accounts:registerUser') # データがなければ入力画面へ戻す
-
+        return redirect('accounts:registerUser')
     if request.method == 'POST':
-        # 「登録する」ボタンが押されたら完了画面へ
         return redirect('accounts:registerUserCommit')
-
     return render(request, 'accounts/registerUserConfirm.html', {'data': data})
 
-# 会員登録：完了処理 (M04)
+# 会員登録完了 (M04)
 def registerUserCommit(request):
     data = request.session.get('register_data')
     if not data:
         return redirect('accounts:registerUser')
-
-    # ここで初めてデータベース(MySQL)に保存する
     User.objects.create(
         user_id=data['user_id'],
         password=data['password'],
         name=data['name'],
         address=data['address']
     )
-    
-    # 用が済んだセッションデータを削除
     del request.session['register_data']
-
     return render(request, 'accounts/registerUserCommit.html')
+
+# 会員情報確認画面 (M05)
+def userInfo(request):
+    user_id = request.session.get('login_user_id')
+    if not user_id:
+        return redirect('accounts:login')
+    # ログイン中のユーザー情報を取得
+    user = get_object_or_404(User, user_id=user_id)
+    return render(request, 'accounts/userInfo.html', {'user': user})
+
+# 会員情報更新画面 (M06)
+def updateUser(request):
+    user_id = request.session.get('login_user_id')
+    if not user_id:
+        return redirect('accounts:login')
+    
+    user = get_object_or_404(User, user_id=user_id)
+    
+    if request.method == 'POST':
+        # 入力されたデータでバリデーション
+        form = UserUpdateForm(request.POST, instance=user)
+        if form.is_valid():
+            # 更新データをセッションに一時保存
+            request.session['update_data'] = form.cleaned_data
+            return redirect('accounts:updateUserConfirm')
+    else:
+        # 既存のデータをフォームに初期表示させる
+        form = UserUpdateForm(instance=user)
+
+    return render(request, 'accounts/updateUser.html', {'form': form})
+
+# 会員情報更新確認画面 (M07)
+def updateUserConfirm(request):
+    user_id = request.session.get('login_user_id')
+    if not user_id:
+        return redirect('accounts:login')
+
+    data = request.session.get('update_data')
+    if not data:
+        return redirect('accounts:updateUser')
+
+    if request.method == 'POST':
+        return redirect('accounts:updateUserCommit')
+
+    return render(request, 'accounts/updateUserConfirm.html', {'data': data})
+
+# 会員情報更新完了画面 (M08)
+def updateUserCommit(request):
+    user_id = request.session.get('login_user_id')
+    if not user_id:
+        return redirect('accounts:login')
+
+    data = request.session.get('update_data')
+    if not data:
+        return redirect('accounts:updateUser')
+
+    # DBの情報を上書きして保存 (UPDATE)
+    user = get_object_or_404(User, user_id=user_id)
+    user.name = data['name']
+    user.address = data['address']
+    user.save()
+
+    del request.session['update_data']
+    return render(request, 'accounts/updateUserCommit.html')
+
+# 退会確認画面 (M09) - 後で実装
+def withdrawConfirm(request):
+    return render(request, 'accounts/withdrawConfirm.html')
+
+# 退会完了画面 (M10) - 後で実装
+def withdrawCommit(request):
+    return render(request, 'accounts/withdrawCommit.html')
