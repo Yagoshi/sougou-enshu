@@ -55,7 +55,6 @@ def userInfo(request):
     user_id = request.session.get('login_user_id')
     if not user_id:
         return redirect('accounts:login')
-    # ログイン中のユーザー情報を取得
     user = get_object_or_404(User, user_id=user_id)
     return render(request, 'accounts/userInfo.html', {'user': user})
 
@@ -68,14 +67,11 @@ def updateUser(request):
     user = get_object_or_404(User, user_id=user_id)
     
     if request.method == 'POST':
-        # 入力されたデータでバリデーション
         form = UserUpdateForm(request.POST, instance=user)
         if form.is_valid():
-            # 更新データをセッションに一時保存
             request.session['update_data'] = form.cleaned_data
             return redirect('accounts:updateUserConfirm')
     else:
-        # 既存のデータをフォームに初期表示させる
         form = UserUpdateForm(instance=user)
 
     return render(request, 'accounts/updateUser.html', {'form': form})
@@ -105,7 +101,6 @@ def updateUserCommit(request):
     if not data:
         return redirect('accounts:updateUser')
 
-    # DBの情報を上書きして保存 (UPDATE)
     user = get_object_or_404(User, user_id=user_id)
     user.name = data['name']
     user.address = data['address']
@@ -114,10 +109,30 @@ def updateUserCommit(request):
     del request.session['update_data']
     return render(request, 'accounts/updateUserCommit.html')
 
-# 退会確認画面 (M09) - 後で実装
+# --- ここから下が退会機能の追記部分 ---
+
+# 退会確認画面 (M09)
 def withdrawConfirm(request):
+    user_id = request.session.get('login_user_id')
+    if not user_id:
+        return redirect('accounts:login')
+
+    if request.method == 'POST':
+        return redirect('accounts:withdrawCommit')
+
     return render(request, 'accounts/withdrawConfirm.html')
 
-# 退会完了画面 (M10) - 後で実装
+# 退会完了画面 (M10)
 def withdrawCommit(request):
+    user_id = request.session.get('login_user_id')
+    if not user_id:
+        return redirect('accounts:login')
+
+    # 1. データベースからユーザー情報を完全に削除する (DELETE処理)
+    user = get_object_or_404(User, user_id=user_id)
+    user.delete()
+
+    # 2. セッションを空にしてログアウト状態にする
+    request.session.flush()
+
     return render(request, 'accounts/withdrawCommit.html')

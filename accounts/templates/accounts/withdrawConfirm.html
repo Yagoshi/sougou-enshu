@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <title>退会確認</title>
+</head>
+<body>
+    <h1>退会確認</h1>
+    
+    <div style="border: 2px solid red; padding: 20px; margin-bottom: 20px; background-color: #ffe6e6;">
+        <h2 style="color: red; margin-top: 0;">本当に退会しますか？</h2>
+        <p>この操作は取り消すことができません。</p>
+        <p>※退会すると、会員情報および現在のショッピングカートの中身がすべて削除されます。</p>
+    </div>
+
+    <form method="POST">
+        {% csrf_token %}
+        <button type="submit" style="background-color: red; color: white; font-weight: bold; padding: 10px 20px;">退会する</button>
+    </form>
+    
+    <br>
+    <a href="{% url 'accounts:userInfo' %}">会員情報確認に戻る</a>
+</body>
+</html>
