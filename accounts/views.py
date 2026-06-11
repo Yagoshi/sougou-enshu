@@ -2,8 +2,31 @@ from django.shortcuts import render, redirect
 from .models import User
 from .forms import UserForm
 
+# 会員ログイン画面 (M01)
 def login(request):
-    return render(request, 'accounts/login.html')
+    error_message = ''
+    
+    if request.method == 'POST':
+        # フォームから送信されたIDとパスワードを取得
+        input_user_id = request.POST.get('user_id')
+        input_password = request.POST.get('password')
+        
+        try:
+            # データベースから、IDとパスワードが完全一致するユーザーを探す
+            user = User.objects.get(user_id=input_user_id, password=input_password)
+            
+            # 見つかった場合（ログイン成功）：セッションに会員IDを保存
+            request.session['login_user_id'] = user.user_id
+            
+            # トップページ（商品一覧）へ遷移
+            return redirect('store:main')
+            
+        except User.DoesNotExist:
+            # 見つからなかった場合（ログイン失敗）：エラーメッセージをセット
+            error_message = '会員IDまたはパスワードが間違っています。'
+
+    # GETリクエストの時、またはログイン失敗時はログイン画面を表示
+    return render(request, 'accounts/login.html', {'error_message': error_message})
 
 def userInfo(request):
     return render(request, 'accounts/userInfo.html')
