@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <title>購入確認</title>
+</head>
+<body>
+    <h1>購入確認</h1>
+    
+    <h3>ご注文内容</h3>
+    <ul>
+        {% for cart_item in cart_items %}
+            <li>{{ cart_item.item.name }} ({{ cart_item.amount }}個) - {% widthratio cart_item.item.price 1 cart_item.amount %}円</li>
+        {% endfor %}
+    </ul>
+    <h3 style="color: #d9534f;">お支払い合計: {{ total_price }}円</h3>
+
+    <hr>
+    
+    <form action="{% url 'store:checkoutCommit' %}" method="POST">
+        {% csrf_token %}
+        
+        <h3>配送先住所</h3>
+        <p>※登録住所以外に発送する場合は変更してください。</p>
+        <input type="text" name="destination" value="{{ user.address }}" style="width: 300px;" required>
+        
+        <h3>お支払い方法</h3>
+        <p><input type="radio" checked readonly> 代金引換 (※現在これしか選べません)</p>
+        
+        <br>
+        <button type="submit" style="background-color: green; color: white; padding: 15px; font-weight: bold; font-size: 16px;">注文を確定する</button>
+    </form>
+    
+    <br>
+    <a href="{% url 'store:cart' %}">カートに戻る</a>
+</body>
+</html>
