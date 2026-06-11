@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <title>{{ item.name }} の詳細</title>
+</head>
+<body>
+    <h1>商品詳細</h1>
+    
+    <div class="item-detail">
+        <h2>{{ item.name }}</h2>
+        <p>メーカー: {{ item.manufacturer }}</p>
+        <p>色: {{ item.color }}</p>
+        <p>価格: {{ item.price }}円</p>
+        <p>カテゴリ: {{ item.category.name }}</p>
+        <p>現在の在庫: {{ item.stock }}個</p>
+        
+        {% if item.recommended %}
+            <p style="color: red; font-weight: bold;">★おすすめ商品！</p>
+        {% endif %}
+        
+        <br>
+        <button type="button" disabled>カートに入れる（準備中）</button>
+    </div>
+
+    <br>
+    <a href="{% url 'store:main' %}">商品一覧に戻る</a>
+</body>
+</html>

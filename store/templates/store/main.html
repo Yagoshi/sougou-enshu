@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <title>商品一覧</title>
+</head>
+<body>
+    <h1>商品一覧・検索画面</h1>
+    <form action="{% url 'store:searchResult' %}" method="GET" style="margin-bottom: 20px; padding: 10px; background-color: #f0f0f0;">
+        <label>キーワード:</label>
+        <input type="text" name="keyword" placeholder="商品名で検索">
+        
+        <label>カテゴリ:</label>
+        <select name="category">
+            <option value="">すべてのカテゴリ</option>
+            {% for cat in categories %}
+                <option value="{{ cat.category_id }}">{{ cat.name }}</option>
+            {% endfor %}
+        </select>
+        
+        <button type="submit">検索する</button>
+    </form>
+    <div class="item-container">
+        {% for item in items %}
+            <div style="border: 1px solid #ccc; padding: 10px; margin-bottom: 10px;">
+                <h2><a href="{% url 'store:itemDetail' item.item_id %}">{{ item.name }}</a></h2>
+                <p>メーカー: {{ item.manufacturer }}</p>
+                <p>価格: {{ item.price }}円</p>
+                <p>カテゴリ: {{ item.category.name }}</p>
+            </div>
+        {% empty %}
+            <p>現在、商品は登録されていません。</p>
+        {% endfor %}
+    </div>
+
+</body>
+</html>
