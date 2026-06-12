@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <title>注文履歴の検索と管理</title>
+</head>
+<body style="background-color: #f4f4f9; font-family: sans-serif; padding: 20px;">
+
+    <h1 style="color: #333; border-bottom: 3px solid #333; padding-bottom: 10px;">【管理者専用】注文履歴の検索と管理</h1>
+
+    <form method="GET" style="margin-bottom: 20px; padding: 15px; background-color: #fff; border: 1px solid #ccc;">
+        <label>注文ID または 会員ID で検索:</label>
+        <input type="text" name="keyword" value="{{ keyword|default:'' }}" placeholder="IDを入力">
+        <button type="submit" style="margin-left: 10px; padding: 5px 15px; background-color: #337ab7; color: white; border: none; cursor: pointer;">検索</button>
+        <a href="{% url 'store:adminPurchaseList' %}" style="margin-left: 10px; color: #666;">クリア</a>
+    </form>
+
+    <a href="{% url 'store:adminMain' %}" style="display: inline-block; margin-bottom: 20px; text-decoration: none; color: #333; font-weight: bold;">← メインダッシュボードへ戻る</a>
+
+    {% for data in purchase_data %}
+        <div style="border: 1px solid #ccc; padding: 15px; margin-bottom: 20px; background-color: {% if data.purchase.cancel %}#ffe6e6{% else %}#fff{% endif %};">
+            
+            <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #eee; padding-bottom: 10px; margin-bottom: 10px;">
+                <h3 style="margin: 0;">注文ID: {{ data.purchase.purchase_id }} 
+                    {% if data.purchase.cancel %}
+                        <span style="color: red;">(キャンセル済み)</span>
+                    {% endif %}
+                </h3>
+                <span style="color: #666;">注文日時: {{ data.purchase.booked_date|date:"Y/m/d H:i" }}</span>
+            </div>
+
+            <p><strong>注文者 (会員ID):</strong> {{ data.purchase.user.user_id }}</p>
+            <p><strong>配送先:</strong> {{ data.purchase.destination }}</p>
+            <p><strong>合計金額:</strong> <span style="color: #d9534f; font-weight: bold;">{{ data.total_price }}円</span></p>
+
+            <h4>注文内容</h4>
+            <ul>
+            {% for detail in data.details %}
+                <li>{{ detail.item.name }} - {{ detail.amount }}個 (小計: {% widthratio detail.item.price 1 detail.amount %}円)</li>
+            {% endfor %}
+            </ul>
+
+            {% if not data.purchase.cancel %}
+                <form action="{% url 'store:adminPurchaseCancel' data.purchase.purchase_id %}" method="POST" onsubmit="return confirm('本当にこの注文をキャンセルしますか？（在庫が自動的に戻ります）');">
+                    {% csrf_token %}
+                    <button type="submit" style="background-color: #d9534f; color: white; border: none; padding: 10px 15px; font-weight: bold; cursor: pointer; border-radius: 4px;">この注文をキャンセルする</button>
+                </form>
+            {% endif %}
+
+        </div>
+    {% empty %}
+        <p style="color: gray;">注文履歴が見つかりません。</p>
+    {% endfor %}
+
+</body>
+</html>

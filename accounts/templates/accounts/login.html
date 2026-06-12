@@ -5,7 +5,7 @@
     <title>ログイン</title>
 </head>
 <body>
-    <h1>会員ログイン</h1>
+    <h1>会員ログイン画面だよBRO</h1>
     
     {% if error_message %}
         <p style="color: red; font-weight: bold;">{{ error_message }}</p>
@@ -21,11 +21,11 @@
             <label>パスワード:</label>
             <input type="password" name="password" required>
         </div>
-        <button type="submit">ログインする</button>
+        <button type="submit">ログインしなさい</button>
     </form>
     
     <br>
-    <a href="{% url 'accounts:registerUser' %}">新規会員登録はこちら</a><br>
+    <a href="{% url 'accounts:registerUser' %}">新規会員登録しようか君～</a><br>
     <a href="{% url 'store:main' %}">トップページに戻る</a>
 </body>
 </html>
