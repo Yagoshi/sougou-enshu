@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <title>管理者ログイン</title>
+</head>
+<body style="background-color: #f4f4f9;">
+    <div style="max-width: 400px; margin: 50px auto; padding: 20px; background-color: white; border: 2px solid #333;">
+        <h1 style="text-align: center; border-bottom: 2px solid #333; padding-bottom: 10px;">管理者ログイン</h1>
+        
+        {% if error_message %}
+            <p style="color: red; font-weight: bold;">{{ error_message }}</p>
+        {% endif %}
+
+        <form method="POST">
+            {% csrf_token %}
+            <div style="margin-bottom: 15px;">
+                <label>管理者ID:</label><br>
+                <input type="text" name="admin_id" required style="width: 100%; padding: 5px;">
+            </div>
+            <div style="margin-bottom: 15px;">
+                <label>パスワード:</label><br>
+                <input type="password" name="password" required style="width: 100%; padding: 5px;">
+            </div>
+            <button type="submit" style="width: 100%; padding: 10px; background-color: #333; color: white; font-weight: bold;">ログインする</button>
+        </form>
+        
+        <div style="text-align: center; margin-top: 15px;">
+            <a href="{% url 'store:main' %}">一般ユーザー用トップページへぶっとぶ</a>
+        </div>
+    </div>
+</body>
+</html>

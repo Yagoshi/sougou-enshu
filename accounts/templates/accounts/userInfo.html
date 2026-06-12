@@ -18,6 +18,26 @@
         <li><a href="{% url 'accounts:withdrawConfirm' %}">退会手続きはこちら</a></li>
     </ul>
 
+    <h2>購入履歴</h2>
+    {% if purchase_history %}
+        {% for history in purchase_history %}
+            <div style="border: 1px solid #666; padding: 15px; margin-bottom: 20px; background-color: #f9f9f9;">
+                <h3 style="margin-top: 0;">注文日時: {{ history.purchase.booked_date|date:"Y年m月d日 H:i" }}</h3>
+                <p><strong>配送先:</strong> {{ history.purchase.destination }}</p>
+                <p><strong>お支払い合計金額: <span style="color: #d9534f;">{{ history.total_price }}円</span></strong></p>
+
+                <h4>注文内容:</h4>
+                <ul>
+                {% for detail in history.details %}
+                    <li>{{ detail.item.name }} ({{ detail.amount }}個) - 小計: {% widthratio detail.item.price 1 detail.amount %}円</li>
+                {% endfor %}
+                </ul>
+            </div>
+        {% endfor %}
+    {% else %}
+        <p style="color: gray;">購入履歴はありません。</p>
+    {% endif %}
+
     <br>
     <a href="{% url 'store:main' %}">トップページに戻る</a>
 </body>

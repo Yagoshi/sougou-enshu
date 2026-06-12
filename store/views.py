@@ -1,95 +1,55 @@
 from django.shortcuts import render, get_object_or_404, redirect
-from django.db.models import Max  # IDの自動採番に必要
-from django.db import transaction # 在庫減算と注文処理を安全に行うために必要
+from django.db.models import Max
+from django.db import transaction
 from .models import Item, Category, ItemsInCart, Purchase, PurchaseDetail
 from accounts.models import User
+from .forms import ItemForm  
 
-# 商品検索・一覧画面 (S01)
 def main(request):
     items = Item.objects.all()
     categories = Category.objects.all()
-    
-    context = {
-        'items': items,
-        'categories': categories,
-    }
+    context = {'items': items, 'categories': categories}
     return render(request, 'store/main.html', context)
 
-# 検索結果画面 (S02)
 def searchResult(request):
     keyword = request.GET.get('keyword')
     category_id = request.GET.get('category')
-
     results = Item.objects.all()
-
     if keyword:
         results = results.filter(name__icontains=keyword)
-
     if category_id:
         results = results.filter(category_id=category_id)
-
-    context = {
-        'results': results,
-        'keyword': keyword,
-    }
+    context = {'results': results, 'keyword': keyword}
     return render(request, 'store/searchResult.html', context)
 
-# 商品詳細画面 (S03)
 def itemDetail(request, item_id):
     item = get_object_or_404(Item, item_id=item_id)
-    context = {
-        'item': item
-    }
-    return render(request, 'store/itemDetail.html', context)
+    return render(request, 'store/itemDetail.html', {'item': item})
 
-# ショッピングカート画面 (S04)
 def cart(request):
-    # セッションからログインユーザーを取得
     user_id = request.session.get('login_user_id')
-    if not user_id:
-        return redirect('accounts:login')
-        
+    if not user_id: return redirect('accounts:login')
     user = get_object_or_404(User, user_id=user_id)
-    
-    # このユーザーのカートに入っている商品を全て取得
     cart_items = ItemsInCart.objects.filter(user=user)
-    
-    # 合計金額を計算
     total_price = sum(item.item.price * item.amount for item in cart_items)
-    
-    context = {
-        'cart_items': cart_items,
-        'total_price': total_price,
-    }
+    context = {'cart_items': cart_items, 'total_price': total_price}
     return render(request, 'store/cart.html', context)
 
-# カートに追加する処理（画面表示はせず、処理が終わったらcartへリダイレクト）
 def add_to_cart(request, item_id):
     if request.method == 'POST':
         user_id = request.session.get('login_user_id')
-        
-        if not user_id:
-            return redirect('accounts:login')
-            
-        # フォームから送信された数量を取得（デフォルト1）
+        if not user_id: return redirect('accounts:login')
         amount = int(request.POST.get('amount', 1))
-        
         item = get_object_or_404(Item, item_id=item_id)
         user = get_object_or_404(User, user_id=user_id)
-        
-        # カートに既に同じ商品があれば数量を加算、なければ新規作成
         cart_item, created = ItemsInCart.objects.get_or_create(
-            user=user,
-            item=item,
-            defaults={'amount': amount}
+            user=user, item=item, defaults={'amount': amount}
         )
         if not created:
             cart_item.amount += amount
             cart_item.save()
-            
         return redirect('store:cart')
 
-# カート内の数量変更
 def update_cart(request, item_id):
     user_id = request.session.get('login_user_id')
     if not user_id: return redirect('accounts:login')
@@ -98,91 +58,187 @@ def update_cart(request, item_id):
         user = get_object_or_404(User, user_id=user_id)
         item = get_object_or_404(Item, item_id=item_id)
         cart_item = get_object_or_404(ItemsInCart, user=user, item=item)
-        
-        # 在庫数を超えない範囲で更新
         if amount > 0 and amount <= item.stock:
             cart_item.amount = amount
             cart_item.save()
     return redirect('store:cart')
 
-# カートから商品を削除
 def delete_cart(request, item_id):
     user_id = request.session.get('login_user_id')
     if not user_id: return redirect('accounts:login')
     user = get_object_or_404(User, user_id=user_id)
     item = get_object_or_404(Item, item_id=item_id)
-    # カートから該当レコードを削除
     ItemsInCart.objects.filter(user=user, item=item).delete()
     return redirect('store:cart')
 
-# 購入確認画面 (S05)
 def checkout(request):
     user_id = request.session.get('login_user_id')
     if not user_id: return redirect('accounts:login')
-    
     user = get_object_or_404(User, user_id=user_id)
     cart_items = ItemsInCart.objects.filter(user=user)
-    
     if not cart_items: return redirect('store:cart')
-    
     total_price = sum(item.item.price * item.amount for item in cart_items)
-    context = {
-        'user': user,
-        'cart_items': cart_items,
-        'total_price': total_price,
-    }
+    context = {'user': user, 'cart_items': cart_items, 'total_price': total_price}
     return render(request, 'store/checkout.html', context)
 
-# 購入完了処理 (S06)
 def checkoutCommit(request):
     user_id = request.session.get('login_user_id')
     if not user_id: return redirect('accounts:login')
     if request.method != 'POST': return redirect('store:cart')
-
-    # 送信された配送先（変更されていればその値）を取得
     destination = request.POST.get('destination')
     user = get_object_or_404(User, user_id=user_id)
     cart_items = ItemsInCart.objects.filter(user=user)
-    
     if not cart_items: return redirect('store:cart')
 
-    # transaction.atomic() で囲むことで、途中でエラーが起きたら全てのDB操作をキャンセルする
     with transaction.atomic():
-        # 在庫不足チェック
         for c_item in cart_items:
             if c_item.amount > c_item.item.stock:
-                return redirect('store:cart') # 実際の運用ではエラー画面を出しますが今回はカートに戻します
-
-        # PurchaseのIDを手動採番 (現在の最大値+1)
+                return redirect('store:cart')
         max_p = Purchase.objects.aggregate(Max('purchase_id'))['purchase_id__max']
         next_p_id = (max_p or 0) + 1
-        
-        # 注文テーブル(Purchase)に保存
-        purchase = Purchase.objects.create(
-            purchase_id=next_p_id,
-            destination=destination,
-            user=user
-        )
-
-        # PurchaseDetailのIDを手動採番
+        purchase = Purchase.objects.create(purchase_id=next_p_id, destination=destination, user=user)
         max_pd = PurchaseDetail.objects.aggregate(Max('purchase_detail_id'))['purchase_detail_id__max']
         next_pd_id = (max_pd or 0) + 1
-
-        # カートの中身をループして、注文詳細(PurchaseDetail)への保存と在庫減算を実行
         for c_item in cart_items:
-            PurchaseDetail.objects.create(
-                purchase_detail_id=next_pd_id,
-                amount=c_item.amount,
-                item=c_item.item,
-                purchase=purchase
-            )
+            PurchaseDetail.objects.create(purchase_detail_id=next_pd_id, amount=c_item.amount, item=c_item.item, purchase=purchase)
             next_pd_id += 1
-            
-            # 商品テーブルの在庫を減らす
             c_item.item.stock -= c_item.amount
             c_item.item.save()
-
-        # 購入が完了したのでカートを空にする
         cart_items.delete()
-
     return render(request, 'store/purchaseComplete.html')
+
+
+# ==========================================
+# 管理者専用ビュー
+# ==========================================
+
+# 管理者メインページ（商品検索一覧）
+def adminMain(request):
+    admin_id = request.session.get('admin_login_id')
+    if not admin_id: return redirect('accounts:adminLogin')
+
+    # 管理者用商品検索処理
+    keyword = request.GET.get('keyword')
+    category_id = request.GET.get('category')
+    
+    items = Item.objects.all()
+    if keyword:
+        items = items.filter(name__icontains=keyword)
+    if category_id:
+        items = items.filter(category_id=category_id)
+
+    categories = Category.objects.all()
+    
+    context = {
+        'items': items,
+        'categories': categories,
+        'admin_id': admin_id,
+        'keyword': keyword,
+        'category_id': category_id,
+    }
+    return render(request, 'store/adminMain.html', context)
+
+# 商品の新規登録
+def adminItemAdd(request):
+    admin_id = request.session.get('admin_login_id')
+    if not admin_id: return redirect('accounts:adminLogin')
+    
+    if request.method == 'POST':
+        form = ItemForm(request.POST)
+        if form.is_valid():
+            form.save()
+            return redirect('store:adminMain')
+    else:
+        form = ItemForm()
+        
+    return render(request, 'store/adminItemForm.html', {'form': form, 'title': '商品新規登録'})
+
+# 商品の修正
+def adminItemEdit(request, item_id):
+    admin_id = request.session.get('admin_login_id')
+    if not admin_id: return redirect('accounts:adminLogin')
+    
+    item = get_object_or_404(Item, item_id=item_id)
+    if request.method == 'POST':
+        form = ItemForm(request.POST, instance=item)
+        if form.is_valid():
+            form.save()
+            return redirect('store:adminMain')
+    else:
+        form = ItemForm(instance=item)
+        # 主キー(ID)は修正不可にする設定
+        form.fields['item_id'].widget.attrs['readonly'] = True
+        
+    return render(request, 'store/adminItemForm.html', {'form': form, 'title': '商品情報修正'})
+
+# 商品の削除
+def adminItemDelete(request, item_id):
+    admin_id = request.session.get('admin_login_id')
+    if not admin_id: return redirect('accounts:adminLogin')
+    
+    if request.method == 'POST':
+        item = get_object_or_404(Item, item_id=item_id)
+        item.delete()
+    return redirect('store:adminMain')
+
+# 商品のおすすめ指定切り替え
+def adminItemToggleRecommend(request, item_id):
+    admin_id = request.session.get('admin_login_id')
+    if not admin_id: return redirect('accounts:adminLogin')
+    
+    item = get_object_or_404(Item, item_id=item_id)
+    item.recommended = not item.recommended
+    item.save()
+    return redirect('store:adminMain')
+
+# 管理者用 注文履歴検索・一覧画面
+def adminPurchaseList(request):
+    admin_id = request.session.get('admin_login_id')
+    if not admin_id: return redirect('accounts:adminLogin')
+
+    # 検索キーワード（注文ID または 会員ID を想定）
+    keyword = request.GET.get('keyword')
+    
+    # 最新の注文から順に取得
+    purchases = Purchase.objects.all().order_by('-booked_date')
+
+    if keyword:
+        # 注文IDと完全一致、または会員IDにキーワードが含まれるものを検索
+        purchases = purchases.filter(purchase_id__icontains=keyword) | purchases.filter(user__user_id__icontains=keyword)
+
+    # テンプレートで扱いやすいように、注文ごとに詳細と合計金額をまとめる
+    purchase_data = []
+    for p in purchases:
+        details = PurchaseDetail.objects.filter(purchase=p)
+        total_price = sum(d.item.price * d.amount for d in details)
+        purchase_data.append({
+            'purchase': p,
+            'details': details,
+            'total_price': total_price
+        })
+
+    return render(request, 'store/adminPurchaseList.html', {'purchase_data': purchase_data, 'keyword': keyword})
+
+# 管理者用 注文キャンセル処理
+def adminPurchaseCancel(request, purchase_id):
+    admin_id = request.session.get('admin_login_id')
+    if not admin_id: return redirect('accounts:adminLogin')
+
+    if request.method == 'POST':
+        purchase = get_object_or_404(Purchase, purchase_id=purchase_id)
+        
+        # まだキャンセルされていない場合のみ処理を実行
+        if not purchase.cancel:
+            # トランザクションで安全に処理（途中でエラーが起きたら元に戻す）
+            with transaction.atomic():
+                # 注文のキャンセルステータスをTrueに変更
+                purchase.cancel = True
+                purchase.save()
+                
+                # キャンセルされた注文に含まれる商品の「在庫を元に戻す」処理
+                details = PurchaseDetail.objects.filter(purchase=purchase)
+                for detail in details:
+                    detail.item.stock += detail.amount
+                    detail.item.save()
+
+    return redirect('store:adminPurchaseList')

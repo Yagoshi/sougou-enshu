@@ -18,20 +18,20 @@ class Item(models.Model):
     stock = models.IntegerField()
     recommended = models.BooleanField(default=False)
     
-    # 外部キー制約 (DB上は category_id になります)
+    # 外部キー制約 (DB上は category_id)
     category = models.ForeignKey(Category, on_delete=models.CASCADE)
 
     class Meta:
         db_table = 'shopping_item'
 
 class ItemsInCart(models.Model):
-    # int, PK, INDEX, 自動採番 (AutoFieldを使います)
+    # int, PK, INDEX, 自動採番
     id = models.AutoField(primary_key=True, db_index=True)
     amount = models.IntegerField()
-    # 登録日に現在日時を自動設定 (※定義書の booked_delete は booked_date のタイポと推測して修正しています)
+    # 登録日に現在日時を自動設定
     booked_date = models.DateTimeField(auto_now_add=True)
     
-    # 外部キー制約 (DB上は item_id, user_id になります)
+    # 外部キー制約
     item = models.ForeignKey(Item, on_delete=models.CASCADE)
     # accountsアプリのUserモデルを参照
     user = models.ForeignKey('accounts.User', on_delete=models.CASCADE)
@@ -46,7 +46,7 @@ class Purchase(models.Model):
     booked_date = models.DateTimeField(auto_now_add=True)
     cancel = models.BooleanField(default=False)
     
-    # 外部キー制約 (DB上は user_id になります)
+    # 外部キー制約 (DB上は user_id)
     user = models.ForeignKey('accounts.User', on_delete=models.CASCADE)
 
     class Meta:
@@ -58,7 +58,7 @@ class PurchaseDetail(models.Model):
     # 1以上の整数を想定
     amount = models.IntegerField()
     
-    # 外部キー制約 (DB上は item_id, purchase_id になります)
+    # 外部キー制約 (DB上は item_id, purchase_id)
     item = models.ForeignKey(Item, on_delete=models.CASCADE)
     purchase = models.ForeignKey(Purchase, on_delete=models.CASCADE)
 

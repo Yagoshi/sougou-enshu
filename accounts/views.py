@@ -1,6 +1,7 @@
 from django.shortcuts import render, redirect, get_object_or_404
-from .models import User
+from .models import User, Admin 
 from .forms import UserForm, UserUpdateForm
+from store.models import Purchase, PurchaseDetail
 
 # 会員ログイン画面 (M01)
 def login(request):
@@ -50,13 +51,34 @@ def registerUserCommit(request):
     del request.session['register_data']
     return render(request, 'accounts/registerUserCommit.html')
 
-# 会員情報確認画面 (M05)
+# 会員情報確認画面 (M05) - 履歴取得機能を追加
 def userInfo(request):
     user_id = request.session.get('login_user_id')
     if not user_id:
         return redirect('accounts:login')
+    
     user = get_object_or_404(User, user_id=user_id)
-    return render(request, 'accounts/userInfo.html', {'user': user})
+
+    # このユーザーの注文履歴を取得（最新の注文が上に来るように -booked_date を指定）
+    purchases = Purchase.objects.filter(user=user).order_by('-booked_date')
+
+    # テンプレートで表示しやすいように、各注文に紐づく詳細と合計金額をリスト化して渡す
+    purchase_history = []
+    for purchase in purchases:
+        details = PurchaseDetail.objects.filter(purchase=purchase)
+        # 注文ごとの合計金額を計算
+        total_price = sum(detail.item.price * detail.amount for detail in details)
+        
+        purchase_history.append({
+            'purchase': purchase,
+            'details': details,
+            'total_price': total_price
+        })
+
+    return render(request, 'accounts/userInfo.html', {
+        'user': user,
+        'purchase_history': purchase_history
+    })
 
 # 会員情報更新画面 (M06)
 def updateUser(request):
@@ -126,11 +148,26 @@ def withdrawCommit(request):
     if not user_id:
         return redirect('accounts:login')
 
-    # 1. データベースからユーザー情報を完全に削除する (DELETE処理)
     user = get_object_or_404(User, user_id=user_id)
     user.delete()
-
-    # 2. セッションを空にしてログアウト状態にする
     request.session.flush()
 
     return render(request, 'accounts/withdrawCommit.html')
+
+
+# 管理者ログイン画面
+def adminLogin(request):
+    error_message = ''
+    if request.method == 'POST':
+        input_admin_id = request.POST.get('admin_id')
+        input_password = request.POST.get('password')
+        try:
+            # データベースから管理者を検索
+            admin = Admin.objects.get(admin_id=input_admin_id, password=input_password)
+            # 成功したら管理者用セッションを発行
+            request.session['admin_login_id'] = admin.admin_id
+            return redirect('store:adminMain')
+        except Admin.DoesNotExist:
+            error_message = '管理者IDまたはパスワードが間違っています。'
+            
+    return render(request, 'accounts/adminLogin.html', {'error_message': error_message})
