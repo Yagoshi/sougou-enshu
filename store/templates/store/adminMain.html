@@ -1,98 +1,42 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="ja">
 <head>
     <meta charset="UTF-8">
     <title>管理者メインページ</title>
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;600;700&display=swap');
-
-        * { box-sizing: border-box; }
-
-        html {
-            background: linear-gradient(180deg, #f6f7fb 0%, #eef0f7 100%);
-            min-height: 100%;
-        }
-
-        a, button {
-            transition: transform .15s ease, box-shadow .15s ease, filter .15s ease, background-color .15s ease;
-        }
-        a[href]:hover,
-        button:not([disabled]):hover {
-            filter: brightness(0.95);
-            transform: translateY(-1px);
-        }
-        button[disabled] { cursor: not-allowed; }
-
-        a:focus-visible, button:focus-visible {
-            outline: 2px solid #4f46e5;
-            outline-offset: 2px;
-        }
-
-        input[type="text"], select { transition: border-color .15s ease, box-shadow .15s ease; }
-        input[type="text"]:focus, select:focus {
-            outline: none;
-            border-color: #4f46e5 !important;
-            box-shadow: 0 0 0 3px rgba(79, 70, 229, .15);
-        }
-
-        /* テーブルの罫線・余白（border="1" 属性は CSS で上書き） */
-        table th, table td {
-            border: none;
-            border-bottom: 1px solid #eef0f5;
-            padding: 13px 14px;
-            vertical-align: middle;
-        }
-        table th {
-            font-size: 12px;
-            font-weight: 600;
-            letter-spacing: .04em;
-            color: #cfd6e6;
-        }
-        table tr:last-child td { border-bottom: none; }
-        table tr:nth-child(even) td { background-color: #fafbff; }
-        table tr:hover td { background-color: #f3f4fc; }
-
-        @media (max-width: 720px) {
-            body { padding: 18px 12px; }
-            table { display: block; overflow-x: auto; white-space: nowrap; font-size: 13px; }
-        }
-        @media (prefers-reduced-motion: reduce) {
-            * { transition: none !important; }
-            a:hover, button:hover { transform: none !important; }
-        }
-    </style>
+    <link rel='stylesheet' type='text/css' href='{% static "accounts/css/style.css" %}' />
 </head>
-<body style="margin: 0 auto; max-width: 1180px; background: transparent; font-family: 'Noto Sans JP', -apple-system, 'Segoe UI', sans-serif; color: #2b3445; padding: 36px 24px; min-height: 100vh; -webkit-font-smoothing: antialiased;">
+<body>
 
-    <h1 style="color: #16213a; font-size: 24px; font-weight: 700; letter-spacing: .02em; margin: 0 0 6px; padding-bottom: 16px; border-bottom: 2px solid #4f46e5;">【管理者専用】メインダッシュボード</h1>
-    <p style="color: #6b7488; font-size: 14px; margin: 0 0 24px;">ログイン中の管理者: <strong style="color: #16213a;">{{ admin_id }}</strong></p>
+    <h1>【管理者専用】メインダッシュボード</h1>
+    <p>ログイン中の管理者: <strong style="color: #16213a;">{{ admin_id }}</strong></p>
 
-    <div style="display: flex; flex-wrap: wrap; gap: 12px; align-items: center; margin-bottom: 24px; padding: 18px 20px; background: #ffffff; border: 1px solid #e6e8ef; border-radius: 14px; box-shadow: 0 1px 3px rgba(16, 33, 58, .06);">
-        <a href="{% url 'store:adminItemAdd' %}" style="display: inline-flex; align-items: center; gap: 6px; background-color: #15a06a; color: white; padding: 11px 18px; text-decoration: none; font-weight: 700; font-size: 14px; border-radius: 10px; box-shadow: 0 2px 6px rgba(21, 160, 106, .28);">＋ 新規商品を登録する</a>
-        <a href="{% url 'store:adminPurchaseList' %}" style="display: inline-block; background-color: #f0ad4e; color: white; padding: 10px 15px; text-decoration: none; font-weight: bold; margin-left: 10px; border-radius: 4px;">注文履歴の検索・キャンセル</a>
-        <a href="{% url 'store:main' %}" style="display: inline-flex; align-items: center; background-color: #5b6478; color: white; padding: 11px 18px; text-decoration: none; font-size: 14px; font-weight: 500; border-radius: 10px;">一般トップ画面へ</a>
+    <div class="card card-row">
+        <a href="{% url 'store:adminItemAdd' %}" class="btn btn-success">＋ 新規商品を登録する</a>
+        <a href="{% url 'store:adminPurchaseList' %}" class="btn btn-warning">注文履歴の検索・キャンセル</a>
+        <a href="{% url 'store:main' %}" class="btn btn-secondary">一般トップ画面へ</a>
     </div>
 
-    <form method="GET" style="display: flex; flex-wrap: wrap; align-items: center; gap: 10px; margin-bottom: 28px; padding: 22px 24px; background: #fff; border: 1px solid #e6e8ef; border-radius: 14px; box-shadow: 0 1px 3px rgba(16, 33, 58, .06);">
-        <h3 style="flex-basis: 100%; margin: 0 0 4px; font-size: 15px; font-weight: 700; color: #16213a;">商品内検索</h3>
-        <label style="font-size: 13px; font-weight: 600; color: #6b7488;">キーワード:</label>
-        <input type="text" name="keyword" value="{{ keyword|default:'' }}" placeholder="商品名で検索" style="padding: 9px 12px; font-size: 14px; border: 1px solid #d6dae6; border-radius: 9px; min-width: 200px; background: #fbfbfe;">
-        
-        <label style="margin-left: 6px; font-size: 13px; font-weight: 600; color: #6b7488;">カテゴリ:</label>
-        <select name="category" style="padding: 9px 12px; font-size: 14px; border: 1px solid #d6dae6; border-radius: 9px; background: #fbfbfe; min-width: 180px;">
+    <form method="GET" class="card card-row">
+        <h3 style="flex-basis: 100%;">商品内検索</h3>
+        <label>キーワード:</label>
+        <input type="text" name="keyword" value="{{ keyword|default:'' }}" placeholder="商品名で検索" style="min-width: 200px;">
+
+        <label style="margin-left: 6px;">カテゴリ:</label>
+        <select name="category" style="min-width: 180px;">
             <option value="">すべてのカテゴリ</option>
             {% for cat in categories %}
                 <option value="{{ cat.category_id }}" {% if category_id|slugify == cat.category_id|slugify %}selected{% endif %}>{{ cat.name }}</option>
             {% endfor %}
         </select>
-        
-        <button type="submit" style="margin-left: 6px; padding: 9px 20px; background-color: #4f46e5; color: white; border: none; border-radius: 9px; font-size: 14px; font-weight: 600; cursor: pointer; box-shadow: 0 2px 6px rgba(79, 70, 229, .3);">絞り込む</button>
-        <a href="{% url 'store:adminMain' %}" style="margin-left: 4px; color: #6b7488; font-size: 13px; text-decoration: none;">クリア</a>
+
+        <button type="submit" style="margin-left: 6px;">絞り込む</button>
+        <a href="{% url 'store:adminMain' %}" class="back-link" style="margin: 0;">クリア</a>
     </form>
 
-    <h2 style="font-size: 18px; font-weight: 700; color: #16213a; margin: 0 0 16px;">登録商品一覧</h2>
-    <table border="1" style="width: 100%; border-collapse: separate; border-spacing: 0; background-color: white; border: 1px solid #e6e8ef; border-radius: 14px; overflow: hidden; box-shadow: 0 1px 3px rgba(16, 33, 58, .06); font-size: 14px;">
-        <tr style="background-color: #16213a; color: white; text-align: left;">
+    <h2>登録商品一覧</h2>
+    <table>
+        <tr>
             <th>商品ID</th>
             <th>商品名</th>
             <th>メーカー</th>
@@ -103,32 +47,32 @@
             <th>操作</th>
         </tr>
         {% for item in items %}
-        <tr style="text-align: left;">
-            <td style="color: #6b7488;">{{ item.item_id }}</td>
+        <tr>
+            <td class="text-muted">{{ item.item_id }}</td>
             <td style="font-weight: 600; color: #16213a;">{{ item.name }}</td>
             <td>{{ item.manufacturer }}</td>
             <td>{{ item.color }}</td>
             <td style="font-weight: 600;">{{ item.price }}円</td>
             <td>{{ item.stock }}個</td>
-            
+
             <td>
                 <a href="{% url 'store:adminItemToggleRecommend' item.item_id %}" style="text-decoration: none; font-size: 20px; color: #f5a623;">
                     {% if item.recommended %}★{% else %}☆{% endif %}
                 </a>
             </td>
-            
+
             <td>
-                <a href="{% url 'store:adminItemEdit' item.item_id %}" style="display: inline-block; background-color: #f59e0b; color: white; padding: 6px 14px; text-decoration: none; font-size: 13px; font-weight: 600; border-radius: 8px; margin-right: 8px;">編集</a>
-                
+                <a href="{% url 'store:adminItemEdit' item.item_id %}" class="btn btn-warning btn-small">編集</a>
+
                 <form action="{% url 'store:adminItemDelete' item.item_id %}" method="POST" style="display: inline-block;" onsubmit="return confirm('本当にこの商品を削除しますか？');">
                     {% csrf_token %}
-                    <button type="submit" style="background-color: #e2433a; color: white; border: none; padding: 6px 14px; font-size: 13px; font-weight: 600; border-radius: 8px; cursor: pointer;">削除</button>
+                    <button type="submit" class="btn-danger btn-small">削除</button>
                 </form>
             </td>
         </tr>
         {% empty %}
         <tr>
-            <td colspan="8" style="text-align: center; padding: 28px; color: #9aa1b1; font-size: 14px;">該当する商品は登録されていません。</td>
+            <td colspan="8" style="text-align: center; padding: 28px;" class="text-muted">該当する商品は登録されていません。</td>
         </tr>
         {% endfor %}
     </table>

@@ -1,38 +1,65 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="ja">
 <head>
     <meta charset="UTF-8">
     <title>{{ item.name }} の詳細</title>
+    <link rel='stylesheet' type='text/css' href='{% static "accounts/css/style.css" %}' />
 </head>
 <body>
     <h1>商品詳細</h1>
-    
-    <div class="item-detail">
-        <h2>{{ item.name }}</h2>
-        <p>メーカー: {{ item.manufacturer }}</p>
-        <p>色: {{ item.color }}</p>
-        <p>価格: {{ item.price }}円</p>
-        <p>カテゴリ: {{ item.category.name }}</p>
-        <p>現在の在庫: {{ item.stock }}個</p>
+
+    <table class="center">
+        <tr>
+            <th>商品名</th>
+            <td>
+                {{ item.name }}
+                {% if item.recommended %}
+                    <span class="recommend-badge">★おすすめ商品！</span>
+                {% endif %}
+            </td>
+        </tr>
         
-        {% if item.recommended %}
-            <p style="color: red; font-weight: bold;">★おすすめ商品！</p>
-        {% endif %}
-        
-        <br>
-        {% if request.session.login_user_id %}
-            <form action="{% url 'store:add_to_cart' item.item_id %}" method="POST" style="background-color: #f9f9f9; padding: 10px; border: 1px solid #ddd; display: inline-block;">
-                {% csrf_token %}
-                <label>数量:</label>
-                <input type="number" name="amount" value="1" min="1" max="{{ item.stock }}">
-                <button type="submit">カートに入れる</button>
-            </form>
-        {% else %}
-            <p style="color: red; font-weight: bold;">※カートに入れるには<a href="{% url 'accounts:login' %}">ログイン</a>が必要です。</p>
-        {% endif %}
+        <tr>
+            <th>色</th>
+            <td>{{ item.color }}</td>
+        </tr>
+        <tr>
+            <th>メーカー</th>
+            <td>{{ item.manufacturer }}</td>
+        </tr>
+        <tr>
+            <th>価格</th>
+            <td>{{ item.price }}円</td>
+        </tr>
+        <tr>
+            <th>カテゴリ</th>
+            <td>{{ item.category.name }}</td>
+        </tr>
+        <tr>
+            <th>現在の在庫</th>
+            <td>{{ item.stock }}個</td>
+        </tr>
+    </table>
+
+    <div class="card">
+        <form action="{% if request.session.login_user_id %}{% url 'store:add_to_cart' item.item_id %}{% else %}{% url 'accounts:login' %}{% endif %}"
+              method="{% if request.session.login_user_id %}POST{% else %}GET{% endif %}">
+            {% if request.session.login_user_id %}{% csrf_token %}{% endif %}
+            <table class="center">
+                <tr>
+                    <th>数量:</th>
+                    <td><input type="number" name="amount" value="1" min="1" max="{{ item.stock }}"></td>
+                </tr>
+                <tr>
+                    <td colspan="2" style="text-align: center;">
+                        <button type="submit">カートに入れる</button>
+                    </td>
+                </tr>
+            </table>
+        </form>
     </div>
 
-    <br>
-    <a href="{% url 'store:main' %}">商品一覧に戻る</a>
+    <a href="{% url 'store:main' %}" class="back-link">← 商品一覧に戻る</a>
 </body>
 </html>

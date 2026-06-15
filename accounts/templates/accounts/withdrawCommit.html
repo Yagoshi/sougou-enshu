@@ -1,15 +1,16 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="ja">
 <head>
     <meta charset="UTF-8">
     <title>退会完了</title>
+    <link rel='stylesheet' type='text/css' href='{% static "accounts/css/style.css" %}' />
 </head>
-<body>
+<body class="narrow">
     <h1>退会完了</h1>
     <p>退会手続きが完了しました。</p>
     <p>これまでご利用いただき、誠にありがとうございました。</p>
-    
-    <br>
-    <a href="{% url 'store:main' %}">トップページへ戻る</a>
+
+    <a href="{% url 'store:main' %}" class="back-link">← トップページへ戻る</a>
 </body>
 </html>
