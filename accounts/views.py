@@ -171,3 +171,9 @@ def adminLogin(request):
             error_message = '管理者IDまたはパスワードが間違っています。'
             
     return render(request, 'accounts/adminLogin.html', {'error_message': error_message})
+
+# 会員ログアウト
+def logout(request):
+    if 'login_user_id' in request.session:
+        del request.session['login_user_id']
+    return redirect('store:main')

@@ -1,14 +1,16 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="ja">
 <head>
     <meta charset="UTF-8">
     <title>会員情報更新確認</title>
+    <link rel='stylesheet' type='text/css' href='{% static "accounts/css/style.css" %}' />
 </head>
-<body>
+<body class="narrow">
     <h1>会員情報更新 (確認)</h1>
     <p>以下の内容で情報を更新します。よろしいですか？</p>
-    
-    <div style="border: 1px solid #ccc; padding: 20px; margin-bottom: 20px;">
+
+    <div class="card">
         <p><strong>新しいお名前:</strong> {{ data.name }}</p>
         <p><strong>新しいご住所:</strong> {{ data.address }}</p>
     </div>
@@ -17,8 +19,7 @@
         {% csrf_token %}
         <button type="submit">この内容で更新する</button>
     </form>
-    
-    <br>
-    <a href="{% url 'accounts:updateUser' %}">入力画面に戻って修正する</a>
+
+    <a href="{% url 'accounts:updateUser' %}" class="back-link">← 入力画面に戻って修正する</a>
 </body>
 </html>

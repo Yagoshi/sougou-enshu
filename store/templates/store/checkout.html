@@ -1,37 +1,59 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="ja">
 <head>
     <meta charset="UTF-8">
     <title>購入確認</title>
+    <link rel='stylesheet' type='text/css' href='{% static "accounts/css/style.css" %}' />
 </head>
 <body>
     <h1>購入確認</h1>
-    
-    <h3>ご注文内容</h3>
-    <ul>
-        {% for cart_item in cart_items %}
-            <li>{{ cart_item.item.name }} ({{ cart_item.amount }}個) - {% widthratio cart_item.item.price 1 cart_item.amount %}円</li>
-        {% endfor %}
-    </ul>
-    <h3 style="color: #d9534f;">お支払い合計: {{ total_price }}円</h3>
 
-    <hr>
-    
+    <h3>ご注文内容</h3>
+    <table class="center">
+        <tr>
+            <th>商品名</th>
+            <th>数量</th>
+            <th>小計</th>
+        </tr>
+        {% for cart_item in cart_items %}
+            <tr>
+                <td>{{ cart_item.item.name }}</td>
+                <td>{{ cart_item.amount }}個</td>
+                <td>{% widthratio cart_item.item.price 1 cart_item.amount %}円</td>
+            </tr>
+        {% endfor %}
+        <tr>
+            <th>お支払い合計</th>
+            <td colspan="2" class="text-danger">{{ total_price }}円</td>
+        </tr>
+    </table>
+
     <form action="{% url 'store:checkoutCommit' %}" method="POST">
         {% csrf_token %}
-        
+
         <h3>配送先住所</h3>
-        <p>※登録住所以外に発送する場合は変更してください。</p>
-        <input type="text" name="destination" value="{{ user.address }}" style="width: 300px;" required>
-        
+        <table class="center">
+            <tr>
+                <th>お届け先</th>
+                <td>
+                    <input type="text" name="destination" value="{{ user.address }}" style="width: 300px;" required><br>
+                    <span class="text-muted">※登録住所以外に発送する場合は変更してください。</span>
+                </td>
+            </tr>
+        </table>
+
         <h3>お支払い方法</h3>
-        <p><input type="radio" checked readonly> 代金引換 (※現在これしか選べません)</p>
-        
-        <br>
-        <button type="submit" style="background-color: green; color: white; padding: 15px; font-weight: bold; font-size: 16px;">注文を確定する</button>
+        <table class="center">
+            <tr>
+                <th>方法</th>
+                <td><input type="radio" checked readonly style="width: auto;"> 代金引換 (※現在これしか選べません)</td>
+            </tr>
+        </table>
+
+        <button type="submit" class="btn btn-success btn-block">注文を確定する</button>
     </form>
-    
-    <br>
-    <a href="{% url 'store:cart' %}">カートに戻る</a>
+
+    <a href="{% url 'store:cart' %}" class="back-link">← カートに戻る</a>
 </body>
 </html>

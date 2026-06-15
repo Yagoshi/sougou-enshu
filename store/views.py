@@ -108,9 +108,6 @@ def checkoutCommit(request):
     return render(request, 'store/purchaseComplete.html')
 
 
-# ==========================================
-# 管理者専用ビュー
-# ==========================================
 
 # 管理者メインページ（商品検索一覧）
 def adminMain(request):

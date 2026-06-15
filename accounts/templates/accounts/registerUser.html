@@ -1,15 +1,29 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="ja">
 <head>
     <meta charset="UTF-8">
     <title>会員登録</title>
+    <link rel='stylesheet' type='text/css' href='{% static "accounts/css/style.css" %}' />
 </head>
-<body>
-    <h1>会員登録 (入力)</h1>
-    <form method="POST">
-        {% csrf_token %} {{ form.as_p }}  <button type="submit">確認画面へ</button>
-    </form>
-    <br>
-    <a href="{% url 'store:main' %}">トップページに戻る</a>
+<body class="narrow">
+    <h1>会員登録</h1>
+
+    <div class="card">
+        <form method="POST">
+            {% csrf_token %}
+            <table class="center">
+                {{ form.as_table }}
+
+                <tr>
+                    <td colspan="2" style="text-align: center;">
+                        <button type="submit">確認画面へ</button>
+                    </td>
+                </tr>
+            </table>
+        </form>
+    </div>
+
+    <a href="{% url 'store:main' %}" class="back-link">← トップページに戻る</a>
 </body>
 </html>

@@ -3,18 +3,20 @@
 <head>
     <meta charset="UTF-8">
     <title>会員情報更新</title>
+    <link rel='stylesheet' type='text/css' href='{% static "accounts/css/style.css" %}' />
 </head>
-<body>
+<body class="narrow">
     <h1>会員情報更新 (入力)</h1>
-    
-    <form method="POST">
-        {% csrf_token %}
-        {{ form.as_p }}
-        
-        <button type="submit">確認画面へ</button>
-    </form>
-    
-    <br>
-    <a href="{% url 'accounts:userInfo' %}">会員情報確認に戻る</a>
+
+    <div class="card">
+        <form method="POST">
+            {% csrf_token %}
+            {{ form.as_p }}
+
+            <button type="submit">確認画面へ</button>
+        </form>
+    </div>
+
+    <a href="{% url 'accounts:userInfo' %}" class="back-link">← 会員情報確認に戻る</a> 
 </body>
 </html>

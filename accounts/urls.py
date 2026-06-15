@@ -15,4 +15,5 @@ urlpatterns = [
     path('withdraw/confirm/', views.withdrawConfirm, name='withdrawConfirm'),
     path('withdraw/commit/', views.withdrawCommit, name='withdrawCommit'),
     path('admin_login/', views.adminLogin, name='adminLogin'),
+    path('logout/', views.logout, name='logout'),
 ]

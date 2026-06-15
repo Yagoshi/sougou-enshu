@@ -1,45 +1,91 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="ja">
 <head>
     <meta charset="UTF-8">
     <title>商品一覧</title>
+    <link rel='stylesheet' type='text/css' href='{% static "accounts/css/style.css" %}' />
 </head>
 <body>
-    <h1>商品一覧・検索画面</h1>
+    <h1>商品の検索を行います。</h1>
 
     {% if request.session.login_user_id %}
-        <p style="color: blue;">ログイン中: {{ request.session.login_user_id }} さん</p>
+        <p class="text-success">
+            ログイン中: {{ request.session.login_user_id }} さん
+            | <a href="{% url 'accounts:logout' %}">ログアウト</a>
+        </p>
     {% else %}
         <p><a href="{% url 'accounts:login' %}">ログインはこちら</a></p>
     {% endif %}
+    
 
-    <form action="{% url 'store:searchResult' %}" method="GET" style="margin-bottom: 20px; padding: 10px; background-color: #f0f0f0;">
-        <label>キーワード:</label>
-        <input type="text" name="keyword" placeholder="商品名で検索">
-        
-        <label>カテゴリ:</label>
-        <select name="category">
-            <option value="">すべてのカテゴリ</option>
-            {% for cat in categories %}
-                <option value="{{ cat.category_id }}">{{ cat.name }}</option>
-            {% endfor %}
-        </select>
-        
-        <button type="submit">検索する</button>
-    </form>
-
-    <div class="item-container">
-        {% for item in items %}
-            <div style="border: 1px solid #ccc; padding: 10px; margin-bottom: 10px;">
-                <h2><a href="{% url 'store:itemDetail' item.item_id %}">{{ item.name }}</a></h2>
-                <p>メーカー: {{ item.manufacturer }}</p>
-                <p>価格: {{ item.price }}円</p>
-                <p>カテゴリ: {{ item.category.name }}</p>
-            </div>
-        {% empty %}
-            <p>現在、商品は登録されていません。</p>
-        {% endfor %}
+    <div class="card">
+        <form action="{% url 'store:searchResult' %}" method="GET">
+            <table class="center">
+                <tr>
+                    <th>キーワード:</th>
+                    <td><input type="text" name="keyword" class="text" placeholder="商品名で検索"></td>
+                </tr>
+                <tr>
+                    <th>カテゴリ:</th>
+                    <td>
+                        <select name="category">
+                            <option value="">すべてのカテゴリ</option>
+                            {% for cat in categories %}
+                                <option value="{{ cat.category_id }}">{{ cat.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </td>
+                </tr>
+                <tr>
+                    <td colspan="2" style="text-align: center;">
+                        <button type="submit">検索する</button>
+                    </td>
+                </tr>
+            </table>
+        </form>
     </div>
 
+    <table class="center">
+        <tr>
+            <th>商品名</th>
+            <th>メーカー</th>
+            <th>価格</th>
+            <th>カテゴリ</th>
+        </tr>
+        {% for item in items %}
+            <tr>
+                <td><a href="{% url 'store:itemDetail' item.item_id %}">{{ item.name }}</a></td>
+                <td>{{ item.manufacturer }}</td>
+                <td>{{ item.price }}円</td>
+                <td>{{ item.category.name }}</td>
+            </tr>
+        {% empty %}
+            <tr>
+                <td colspan="4">現在、商品は登録されていません。</td>
+            </tr>
+        {% endfor %}
+    </table>
+
+    <div class="card">
+        <h3>ページ一覧（開発用）</h3>
+        <ul>
+            <li><a href="{% url 'store:main' %}">商品一覧</a></li>
+            <li><a href="{% url 'store:searchResult' %}">検索結果</a></li>
+            <li><a href="{% url 'store:cart' %}">ショッピングカート</a></li>
+            <li><a href="{% url 'store:checkout' %}">購入確認</a></li>
+    
+            <li><a href="{% url 'accounts:login' %}">ログイン</a></li>
+            <li><a href="{% url 'accounts:registerUser' %}">会員登録</a></li>
+            <li><a href="{% url 'accounts:userInfo' %}">会員情報確認</a></li>
+            <li><a href="{% url 'accounts:updateUser' %}">会員情報更新</a></li>
+            <li><a href="{% url 'accounts:withdrawConfirm' %}">退会確認</a></li>
+            <li><a href="{% url 'accounts:adminLogin' %}">管理者ログイン</a></li>
+    
+            <li><a href="{% url 'store:adminMain' %}">管理者メイン</a></li>
+            <li><a href="{% url 'store:adminItemAdd' %}">商品登録</a></li>
+            <li><a href="{% url 'store:adminPurchaseList' %}">注文履歴管理</a></li>
+        </ul>
+    </div>
 </body>
 </html>

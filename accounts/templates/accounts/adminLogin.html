@@ -1,30 +1,32 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="ja">
 <head>
     <meta charset="UTF-8">
     <title>管理者ログイン</title>
+    <link rel='stylesheet' type='text/css' href='{% static "accounts/css/style.css" %}' />
 </head>
-<body style="background-color: #f4f4f9;">
-    <div style="max-width: 400px; margin: 50px auto; padding: 20px; background-color: white; border: 2px solid #333;">
-        <h1 style="text-align: center; border-bottom: 2px solid #333; padding-bottom: 10px;">管理者ログイン</h1>
-        
+<body class="narrow">
+    <div class="card">
+        <h1 style="text-align: center;">管理者ログイン</h1>
+
         {% if error_message %}
-            <p style="color: red; font-weight: bold;">{{ error_message }}</p>
+            <p class="error" style="font-weight: bold;">{{ error_message }}</p>
         {% endif %}
 
         <form method="POST">
             {% csrf_token %}
             <div style="margin-bottom: 15px;">
                 <label>管理者ID:</label><br>
-                <input type="text" name="admin_id" required style="width: 100%; padding: 5px;">
+                <input type="text" name="admin_id" required style="width: 100%;">
             </div>
             <div style="margin-bottom: 15px;">
                 <label>パスワード:</label><br>
-                <input type="password" name="password" required style="width: 100%; padding: 5px;">
+                <input type="password" name="password" required style="width: 100%;">
             </div>
-            <button type="submit" style="width: 100%; padding: 10px; background-color: #333; color: white; font-weight: bold;">ログインする</button>
+            <button type="submit" class="btn-block">ログインする</button>
         </form>
-        
+
         <div style="text-align: center; margin-top: 15px;">
             <a href="{% url 'store:main' %}">一般ユーザー用トップページへぶっとぶ</a>
         </div>
