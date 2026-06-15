@@ -174,6 +174,5 @@ def adminLogin(request):
 
 # 会員ログアウト
 def logout(request):
-    if 'login_user_id' in request.session:
-        del request.session['login_user_id']
+    request.session.flush()
     return redirect('store:main')
