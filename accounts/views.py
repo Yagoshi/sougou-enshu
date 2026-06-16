@@ -176,3 +176,26 @@ def adminLogin(request):
 def logout(request):
     request.session.flush()
     return redirect('store:main')
+
+# 購入履歴画面
+def purchaseHistory(request):
+    user_id = request.session.get('login_user_id')
+    if not user_id:
+        return redirect('accounts:login')
+
+    user = get_object_or_404(User, user_id=user_id)
+    purchases = Purchase.objects.filter(user=user).order_by('-booked_date')
+
+    purchase_history = []
+    for purchase in purchases:
+        details = PurchaseDetail.objects.filter(purchase=purchase)
+        total_price = sum(detail.item.price * detail.amount for detail in details)
+        purchase_history.append({
+            'purchase': purchase,
+            'details': details,
+            'total_price': total_price
+        })
+
+    return render(request, 'accounts/purchaseHistory.html', {
+        'purchase_history': purchase_history
+    })
