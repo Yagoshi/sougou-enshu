@@ -17,6 +17,7 @@ class Item(models.Model):
     price = models.IntegerField()
     stock = models.IntegerField()
     recommended = models.BooleanField(default=False)
+    image = models.ImageField(upload_to='items/', blank=True, null=True)
     
     # 外部キー制約 (DB上は category_id)
     category = models.ForeignKey(Category, on_delete=models.CASCADE)

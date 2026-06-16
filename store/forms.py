@@ -5,7 +5,7 @@ class ItemForm(forms.ModelForm):
     class Meta:
         model = Item
         # テーブル定義書の全項目を対象にしちゃう
-        fields = ['item_id', 'name', 'manufacturer', 'color', 'price', 'stock', 'recommended', 'category']
+        fields = ['item_id', 'name', 'manufacturer', 'color', 'price', 'stock', 'recommended', 'category', 'image']
         labels = {
             'item_id': '商品ID (手動設定)',
             'name': '商品名',
@@ -15,4 +15,5 @@ class ItemForm(forms.ModelForm):
             'stock': '在庫数',
             'recommended': 'おすすめ商品指定 (チェックでTrue)',
             'category': 'カテゴリ',
+            'image': '商品画像',
         }
