@@ -151,7 +151,7 @@ class Command(BaseCommand):
             obj, created = Account.objects.update_or_create(
                 user_id=user_id,
                 defaults={
-                    "password": password,
+                    "password": make_password(password),
                     "name": name,
                     "address": address,
                 },
@@ -165,6 +165,9 @@ class Command(BaseCommand):
         categories_data = [
             (1, "鞄"),
             (2, "帽子"),
+            (3, "衣類"),
+            (4, "シューズ"),
+            (5, "アクセサリー"),
         ]
         categories = {}
         for category_id, name in categories_data:
@@ -185,6 +188,11 @@ class Command(BaseCommand):
             (103, "撥水リュック 25L", "テストアウトドア", "ブラック", 6480, 30, True, 1),
             (104, "コットンキャップ ロゴ刺繍", "帽子サンプル堂", "ネイビー", 2480, 60, False, 2),
             (105, "つば広ストローハット", "帽子サンプル堂", "ナチュラル", 3280, 40, True, 2),
+            (106, "デニムジャケット ウォッシュ加工", "テストアパレル", "インディゴ", 8900, 20, True, 3),
+            (107, "コットンTシャツ 無地", "テストアパレル", "ホワイト", 1980, 100, False, 3),
+            (108, "ランニングシューズ エアクッション", "テストスポーツ", "グレー", 7800, 25, True, 4),
+            (109, "レザースニーカー クラシック", "テストスポーツ", "ホワイト", 9800, 15, False, 4),
+            (110, "シルバーネックレス チェーン", "アクセサリーサンプル", "シルバー", 4500, 35, False, 5),
         ]
         items = {}
         for item_id, name, manufacturer, color, price, stock, recommended, cat_id in items_data:
@@ -228,21 +236,23 @@ class Command(BaseCommand):
         # 注文 (shopping_purchase)
         # ====================================
         purchases_data = [
-            # (purchase_id, destination, cancel, user_id)
-            (1001, "東京都新宿区西新宿1-1-1", False, "user001"),
-            (1002, "大阪府大阪市北区梅田2-2-2", False, "user002"),
-            (1003, "愛知県名古屋市中区栄3-3-3", True, "user003"),
-            (1004, "福岡県福岡市博多区博多駅前4-4-4", False, "user004"),
-            (1005, "北海道札幌市中央区大通西5-5-5", False, "user005"),
+            # (purchase_id, destination, cancel, user_id, payment_status, card_last4)
+            (1001, "東京都新宿区西新宿1-1-1", False, "user001", "succeeded", "4242"),
+            (1002, "大阪府大阪市北区梅田2-2-2", False, "user002", "succeeded", "4242"),
+            (1003, "愛知県名古屋市中区栄3-3-3", True, "user003", "succeeded", "4242"),
+            (1004, "福岡県福岡市博多区博多駅前4-4-4", False, "user004", "succeeded", "1234"),
+            (1005, "北海道札幌市中央区大通西5-5-5", False, "user005", "succeeded", "5678"),
         ]
         purchases = {}
-        for purchase_id, destination, cancel, user_id in purchases_data:
+        for purchase_id, destination, cancel, user_id, payment_status, card_last4 in purchases_data:
             obj, created = Purchase.objects.update_or_create(
                 purchase_id=purchase_id,
                 defaults={
                     "destination": destination,
                     "cancel": cancel,
                     "user": accounts[user_id],
+                    "payment_status": payment_status,
+                    "card_last4": card_last4,
                 },
             )
             purchases[purchase_id] = obj
@@ -288,3 +298,7 @@ class Command(BaseCommand):
         self.stdout.write(self.style.SUCCESS(f"管理者: {len(admins_data)}件"))
 
         self.stdout.write(self.style.SUCCESS("=== サンプルデータの投入が完了しました ==="))
+        self.stdout.write("")
+        self.stdout.write("ログイン情報:")
+        self.stdout.write("  会員: user001 / password001 ～ user005 / password005")
+        self.stdout.write("  管理者: admin001 / adminpass001 ～ admin005 / adminpass005")
