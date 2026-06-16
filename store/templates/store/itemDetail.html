@@ -9,6 +9,10 @@
 <body>
     <h1>商品詳細</h1>
 
+    {% if item.image %}
+        <img src="{{ item.image.url }}" alt="{{ item.name }}" style="max-width: 300px; margin-bottom: 20px;">
+    {% endif %}
+
     <table class="center">
         <tr>
             <th>商品名</th>

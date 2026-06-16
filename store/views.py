@@ -141,7 +141,7 @@ def adminItemAdd(request):
     if not admin_id: return redirect('accounts:adminLogin')
     
     if request.method == 'POST':
-        form = ItemForm(request.POST)
+        form = ItemForm(request.POST, request.FILES)
         if form.is_valid():
             form.save()
             return redirect('store:adminMain')
@@ -157,7 +157,7 @@ def adminItemEdit(request, item_id):
     
     item = get_object_or_404(Item, item_id=item_id)
     if request.method == 'POST':
-        form = ItemForm(request.POST, instance=item)
+        form = ItemForm(request.POST, request.FILES, instance=item)
         if form.is_valid():
             form.save()
             return redirect('store:adminMain')
