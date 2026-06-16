@@ -43,13 +43,18 @@
             </tr>
         </table>
 
-        <h3>お支払い方法</h3>
+        {% if error_message %}
+            <p class="text-danger">{{ error_message }}</p>
+        {% endif %}
+
+        <h3>お支払い方法（クレジットカード）</h3>
         <table class="center">
             <tr>
-                <th>方法</th>
-                <td><input type="radio" checked readonly style="width: auto;"> 代金引換 (※現在これしか選べません)</td>
+                <th>カード番号</th>
+                <td><input type="text" name="card_number" value="4242424242424242" maxlength="16" required></td>
             </tr>
         </table>
+        <p class="text-muted">※テスト用カード番号: 4242424242424242（成功） / 4000000000000000（失敗）</p>
 
         <button type="submit" class="btn btn-success btn-block">注文を確定する</button>
     </form>
