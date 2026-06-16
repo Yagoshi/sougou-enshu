@@ -1,0 +1,48 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <title>購入履歴</title>
+    <link rel='stylesheet' type='text/css' href='{% static "accounts/css/style.css" %}' />
+</head>
+<body>
+    <h1>購入履歴</h1>
+
+    {% if purchase_history %}
+        {% for history in purchase_history %}
+            <h3>注文日時: {{ history.purchase.booked_date|date:"Y年m月d日 H:i" }}</h3>
+
+            <table class="center">
+                <tr>
+                    <th>配送先</th>
+                    <td>{{ history.purchase.destination }}</td>
+                </tr>
+                <tr>
+                    <th>お支払い合計金額</th>
+                    <td class="text-danger">{{ history.total_price }}円</td>
+                </tr>
+            </table>
+
+            <table class="center">
+                <tr>
+                    <th>商品名</th>
+                    <th>数量</th>
+                    <th>小計</th>
+                </tr>
+                {% for detail in history.details %}
+                    <tr>
+                        <td>{{ detail.item.name }}</td>
+                        <td>{{ detail.amount }}個</td>
+                        <td>{% widthratio detail.item.price 1 detail.amount %}円</td>
+                    </tr>
+                {% endfor %}
+            </table>
+        {% endfor %}
+    {% else %}
+        <p class="text-muted">購入履歴はありません。</p>
+    {% endif %}
+
+    <a href="{% url 'accounts:userInfo' %}" class="back-link">← 会員情報確認に戻る</a>
+</body>
+</html>
