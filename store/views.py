@@ -1,14 +1,19 @@
 import os
 import requests
+import google.generativeai as genai
 from django.shortcuts import render, get_object_or_404, redirect
 from django.db.models import Max
 from django.db import transaction
-from .models import Item, Category, ItemsInCart, Purchase, PurchaseDetail
+from .models import Item, Category, ItemsInCart, Purchase, PurchaseDetail, Review
 from accounts.models import User
 from .forms import ItemForm
 from django.contrib.auth.decorators import login_required
 from accounts.models import Coupon, User
 import random
+
+from django.db.models import Avg
+from .forms import ReviewForm
+
 
 
 def main(request):
@@ -30,7 +35,47 @@ def searchResult(request):
 
 def itemDetail(request, item_id):
     item = get_object_or_404(Item, item_id=item_id)
-    return render(request, 'store/itemDetail.html', {'item': item})
+
+    reviews = Review.objects.filter(item=item).select_related("user")
+
+    review_count = reviews.count()
+
+    avg_rating = reviews.aggregate(
+        avg=Avg("rating")
+    )["avg"]
+
+    if avg_rating is None:
+        avg_rating = 0
+
+    rating_distribution = []
+
+    for star in range(5, 0, -1):
+        count = reviews.filter(rating=star).count()
+
+        if review_count > 0:
+            percent = round((count / review_count) * 100)
+        else:
+            percent = 0
+
+        rating_distribution.append({
+            "star": star,
+            "count": count,
+            "percent": percent,
+        })
+
+    form = ReviewForm()
+
+    context = {
+        "item": item,
+        "reviews": reviews,
+        "review_count": review_count,
+        "avg_rating": round(avg_rating, 1),
+        "rating_distribution": rating_distribution,
+        "form": form,
+        "login_user_id": request.session.get("login_user_id"),
+    }
+
+    return render(request, "store/itemDetail.html", context)
 
 def cart(request):
     user_id = request.session.get('login_user_id')
@@ -107,18 +152,19 @@ def checkoutCommit(request):
     cart_items = ItemsInCart.objects.filter(user=user)
     if not cart_items: return redirect('store:cart')
 
-    total_price = sum(c.item.price * c.amount for c in cart_items)
+    original_total = sum(c.item.price * c.amount for c in cart_items)
+    total_price = original_total
 
     # クーポンを適用
+    coupon = None
     if coupon_id:
         coupon = get_object_or_404(Coupon, id=coupon_id, user=user)
         if coupon.coupon_type == '20%':
-            total_price *= 0.8
+            total_price = int(total_price * 0.8)
         elif coupon.coupon_type == '50%':
-            total_price *= 0.5
+            total_price = int(total_price * 0.5)
         elif coupon.coupon_type == '99%':
-            total_price *= 0.01
-        total_price = int(total_price)  # 小数点以下を切り捨て
+            total_price = int(total_price * 0.01)
 
     # 決済APIにリクエスト
     api_base_url = os.environ.get('API_BASE_URL', 'http://15.152.44.182/api/v1')
@@ -152,10 +198,12 @@ def checkoutCommit(request):
         error_message = '決済に失敗しました。カード情報を確認して再度お試しください。'
         if payment_data.get('error'):
             error_message += f"（{payment_data['error'].get('message', '')}）"
+        coupons = Coupon.objects.filter(user=user)
         context = {
             'user': user,
             'cart_items': cart_items,
-            'total_price': total_price,
+            'total_price': original_total,
+            'coupons': coupons,
             'error_message': error_message,
         }
         return render(request, 'store/checkout.html', context)
@@ -167,6 +215,10 @@ def checkoutCommit(request):
                 return redirect('store:cart')
         max_p = Purchase.objects.aggregate(Max('purchase_id'))['purchase_id__max']
         next_p_id = (max_p or 0) + 1
+
+        # クーポン適用があれば割引後金額を、なければ None を保存
+        discounted_total = total_price if coupon_id else None
+
         purchase = Purchase.objects.create(
             purchase_id=next_p_id,
             destination=destination,
@@ -174,6 +226,7 @@ def checkoutCommit(request):
             transaction_id=payment_data.get('transaction_id', ''),
             payment_status=payment_data.get('status', 'unknown'),
             card_last4=payment_data.get('card_last4', ''),
+            discounted_total=discounted_total,
         )
         max_pd = PurchaseDetail.objects.aggregate(Max('purchase_detail_id'))['purchase_detail_id__max']
         next_pd_id = (max_pd or 0) + 1
@@ -185,7 +238,7 @@ def checkoutCommit(request):
         cart_items.delete()
 
         # 適用したクーポンを削除
-        if coupon_id:
+        if coupon:
             coupon.delete()
 
     return render(request, 'store/purchaseComplete.html', {'purchase': purchase})
@@ -289,7 +342,9 @@ def adminPurchaseList(request):
     purchase_data = []
     for p in purchases:
         details = PurchaseDetail.objects.filter(purchase=p)
-        total_price = sum(d.item.price * d.amount for d in details)
+        subtotal = sum(d.item.price * d.amount for d in details)
+        # discounted_total が保存されていればそちらを、なければ小計をそのまま使う
+        total_price = p.discounted_total if p.discounted_total is not None else subtotal
         purchase_data.append({
             'purchase': p,
             'details': details,
@@ -337,9 +392,93 @@ def coupon_view(request):
     existing_coupons = Coupon.objects.filter(user=user)
 
     if existing_coupons.count() >= 3:
-        return render(request, 'store/coupon.html', {'message': 'You already have 3 coupons!'})
+        return render(request, 'store/coupon.html', {'message': 'You already have 3 coupons!', 'already_max': True})
 
     coupon_type = random.choice(['20%', '50%', '99%'])
     Coupon.objects.create(user=user, coupon_type=coupon_type)
 
-    return render(request, 'store/coupon.html', {'message': f'You received a {coupon_type} coupon!'})
+    return render(request, 'store/coupon.html', {'coupon_type': coupon_type})
+
+# チャットボット
+def itemChat(request, item_id):
+    if request.method != 'POST':
+        return redirect('store:itemDetail', item_id=item_id)
+
+    item = get_object_or_404(Item, item_id=item_id)
+    user_message = request.POST.get('message', '').strip()
+
+    if not user_message:
+        return redirect('store:itemDetail', item_id=item_id)
+
+    # Gemini APIの設定
+    api_key = os.environ.get('GEMINI_API_KEY', '')
+    genai.configure(api_key=api_key)
+    model = genai.GenerativeModel('models/gemini-2.5-flash')
+
+    # 商品情報をシステムプロンプトに含める
+    system_prompt = f"""
+あなたは「{item.name}」という商品を販売するECサイトのサポートスタッフです。
+以下の商品情報をもとに、お客様の質問に日本語で丁寧に答えてください。
+
+【商品情報】
+- 商品名: {item.name}
+- メーカー: {item.manufacturer}
+- 色: {item.color}
+- 価格: {item.price}円
+- 在庫数: {item.stock}個
+- カテゴリ: {item.category.name}
+
+商品情報に含まれていない質問には「詳細はお問い合わせください」と答えてください。
+回答は2〜3文程度で簡潔にまとめてください。
+"""
+
+    try:
+        response = model.generate_content(f"{system_prompt}\n\nお客様の質問: {user_message}")
+        bot_reply = response.text
+    except Exception:
+        bot_reply = '申し訳ありません。現在チャットボットが利用できません。'
+
+    # セッションにチャット履歴を保存
+    chat_history = request.session.get('chat_history', {})
+    if str(item_id) not in chat_history:
+        chat_history[str(item_id)] = []
+    chat_history[str(item_id)].append({
+        'user': user_message,
+        'bot': bot_reply,
+    })
+    request.session['chat_history'] = chat_history
+
+    return redirect('store:itemDetail', item_id=item_id)
+
+
+def add_review(request, item_id):
+    login_user_id = request.session.get("login_user_id")
+
+    if not login_user_id:
+        return redirect("accounts:login")
+
+    item = get_object_or_404(Item, item_id=item_id)
+    user = get_object_or_404(User, user_id=login_user_id)
+
+    if request.method == "POST":
+        form = ReviewForm(request.POST)
+
+        if form.is_valid():
+            has_purchase = PurchaseDetail.objects.filter(
+                item=item,
+                purchase__user=user,
+                purchase__cancel=False
+            ).exists()
+
+            Review.objects.update_or_create(
+                item=item,
+                user=user,
+                defaults={
+                    "rating": int(form.cleaned_data["rating"]),
+                    "title": form.cleaned_data["title"],
+                    "comment": form.cleaned_data["comment"],
+                    "is_verified_purchase": has_purchase,
+                }
+            )
+
+    return redirect("store:itemDetail", item_id=item.item_id)

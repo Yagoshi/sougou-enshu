@@ -70,15 +70,18 @@ def userInfo(request):
     purchase_history = []
     for purchase in purchases:
         details = PurchaseDetail.objects.filter(purchase=purchase)
-        # 注文ごとの合計金額を計算
-        total_price = sum(detail.item.price * detail.amount for detail in details)
+        # 商品単価×数量の小計合計
+        subtotal = sum(detail.item.price * detail.amount for detail in details)
+        # クーポン割引後の金額が保存されていればそちらを優先、なければ小計をそのまま使う
+        total_price = purchase.discounted_total if purchase.discounted_total is not None else subtotal
         
         purchase_history.append({
             'purchase': purchase,
             'details': details,
-            'total_price': total_price
+            'subtotal': subtotal,
+            'total_price': total_price,
+            'has_discount': purchase.discounted_total is not None,
         })
-
     return render(request, 'accounts/userInfo.html', {
         'user': user,
         'purchase_history': purchase_history
@@ -168,11 +171,12 @@ def adminLogin(request):
         input_admin_id = request.POST.get('admin_id')
         input_password = request.POST.get('password')
         try:
-            # データベースから管理者を検索
-            admin = Admin.objects.get(admin_id=input_admin_id, password=input_password)
-            # 成功したら管理者用セッションを発行
-            request.session['admin_login_id'] = admin.admin_id
-            return redirect('store:adminMain')
+            admin = Admin.objects.get(admin_id=input_admin_id)
+            if check_password(input_password, admin.password):
+                request.session['admin_login_id'] = admin.admin_id
+                return redirect('store:adminMain')
+            else:
+                error_message = '管理者IDまたはパスワードが間違っています。'
         except Admin.DoesNotExist:
             error_message = '管理者IDまたはパスワードが間違っています。'
             
@@ -195,11 +199,15 @@ def purchaseHistory(request):
     purchase_history = []
     for purchase in purchases:
         details = PurchaseDetail.objects.filter(purchase=purchase)
-        total_price = sum(detail.item.price * detail.amount for detail in details)
+        subtotal = sum(detail.item.price * detail.amount for detail in details)
+        # クーポン割引後の金額が保存されていればそちらを優先
+        total_price = purchase.discounted_total if purchase.discounted_total is not None else subtotal
         purchase_history.append({
             'purchase': purchase,
             'details': details,
-            'total_price': total_price
+            'subtotal': subtotal,
+            'total_price': total_price,
+            'has_discount': purchase.discounted_total is not None,
         })
 
     return render(request, 'accounts/purchaseHistory.html', {
