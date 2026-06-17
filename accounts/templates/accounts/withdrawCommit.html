@@ -1,16 +1,13 @@
+{% extends 'store/base.html' %}
 {% load static %}
-<!DOCTYPE html>
-<html lang="ja">
-<head>
-    <meta charset="UTF-8">
-    <title>退会完了</title>
-    <link rel='stylesheet' type='text/css' href='{% static "accounts/css/style.css" %}' />
-</head>
-<body class="narrow">
-    <h1>退会完了</h1>
-    <p>退会手続きが完了しました。</p>
-    <p>これまでご利用いただき、誠にありがとうございました。</p>
 
-    <a href="{% url 'store:main' %}" class="back-link">← トップページへ戻る</a>
-</body>
-</html>
+{% block title %}退会完了 | SOUGOU STORE{% endblock %}
+
+{% block content %}
+<div class="complete-wrap">
+    <div class="complete-icon">👋</div>
+    <h1 class="complete-title">退会手続きが完了しました</h1>
+    <p class="complete-desc">これまでご利用いただき、誠にありがとうございました。</p>
+    <a href="{% url 'store:main' %}"><button class="btn-primary" style="width:100%;">トップページへ戻る</button></a>
+</div>
+{% endblock %}

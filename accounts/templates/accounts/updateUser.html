@@ -1,22 +1,28 @@
-<!DOCTYPE html>
-<html lang="ja">
-<head>
-    <meta charset="UTF-8">
-    <title>会員情報更新</title>
-    <link rel='stylesheet' type='text/css' href='{% static "accounts/css/style.css" %}' />
-</head>
-<body class="narrow">
-    <h1>会員情報更新 (入力)</h1>
+{% extends 'store/base.html' %}
+{% load static %}
 
-    <div class="card">
-        <form method="POST">
-            {% csrf_token %}
-            {{ form.as_p }}
+{% block title %}会員情報更新 | SOUGOU STORE{% endblock %}
 
-            <button type="submit">確認画面へ</button>
-        </form>
+{% block content %}
+<div class="form-wrap">
+    <h2 class="form-title">会員情報の更新</h2>
+
+    <form method="POST" style="display:flex; flex-direction:column; gap:14px;">
+        {% csrf_token %}
+        {% for field in form %}
+        <div class="form-group">
+            <label class="form-label">{{ field.label }}</label>
+            {{ field }}
+            {% if field.errors %}
+            <p style="color:#c0392b; font-size:12px; margin-top:4px;">{{ field.errors|join:", " }}</p>
+            {% endif %}
+        </div>
+        {% endfor %}
+        <button type="submit" class="btn-primary" style="width:100%; padding:12px;">確認画面へ</button>
+    </form>
+
+    <div class="form-links">
+        <a href="{% url 'accounts:userInfo' %}" class="muted">← マイページに戻る</a>
     </div>
-
-    <a href="{% url 'accounts:userInfo' %}" class="back-link">← 会員情報確認に戻る</a> 
-</body>
-</html>
+</div>
+{% endblock %}

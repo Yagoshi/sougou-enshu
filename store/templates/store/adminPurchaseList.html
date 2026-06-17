@@ -1,58 +1,50 @@
+{% extends 'store/base.html' %}
 {% load static %}
-<!DOCTYPE html>
-<html lang="ja">
-<head>
-    <meta charset="UTF-8">
-    <title>注文履歴の検索と管理</title>
-    <link rel='stylesheet' type='text/css' href='{% static "accounts/css/style.css" %}' />
-</head>
-<body>
 
-    <h1>【管理者専用】注文履歴の検索と管理</h1>
+{% block title %}注文履歴管理 | SOUGOU STORE{% endblock %}
 
-    <form method="GET" class="card card-row">
-        <label>注文ID または 会員ID で検索:</label>
-        <input type="text" name="keyword" value="{{ keyword|default:'' }}" placeholder="IDを入力">
-        <button type="submit">検索</button>
-        <a href="{% url 'store:adminPurchaseList' %}" class="back-link" style="margin: 0;">クリア</a>
+{% block content %}
+<div class="section">
+    <div class="section-header">
+        <span class="section-title">注文履歴の検索と管理<span class="admin-badge">ADMIN</span></span>
+        <a href="{% url 'store:adminMain' %}" class="section-more">← ダッシュボードへ</a>
+    </div>
+
+    <form method="GET" style="display:flex; gap:10px; align-items:center; margin-bottom:24px;">
+        <input type="text" name="keyword" value="{{ keyword|default:'' }}" placeholder="注文ID または 会員IDで検索" class="form-input" style="max-width:280px;">
+        <button type="submit" class="btn-primary" style="padding:8px 14px;">検索</button>
+        <a href="{% url 'store:adminPurchaseList' %}" style="font-size:12px; color:var(--text3);">クリア</a>
     </form>
 
-    <a href="{% url 'store:adminMain' %}" class="back-link">← メインダッシュボードへ戻る</a>
-
     {% for data in purchase_data %}
-        <div class="card {% if data.purchase.cancel %}cancelled{% endif %}">
-
-            <div class="card-row" style="justify-content: space-between; border-bottom: 1px solid #eef0f5; padding-bottom: 10px; margin-bottom: 10px;">
-                <h3 style="margin: 0;">注文ID: {{ data.purchase.purchase_id }}
-                    {% if data.purchase.cancel %}
-                        <span class="text-danger">(キャンセル済み)</span>
-                    {% endif %}
-                </h3>
-                <span class="text-muted">注文日時: {{ data.purchase.booked_date|date:"Y/m/d H:i" }}</span>
-            </div>
-
-            <p><strong>注文者 (会員ID):</strong> {{ data.purchase.user.user_id }}</p>
-            <p><strong>配送先:</strong> {{ data.purchase.destination }}</p>
-            <p><strong>合計金額:</strong> <span class="text-danger" style="font-weight: bold;">{{ data.total_price }}円</span></p>
-
-            <h4>注文内容</h4>
-            <ul>
-            {% for detail in data.details %}
-                <li>{{ detail.item.name }} - {{ detail.amount }}個 (小計: {% widthratio detail.item.price 1 detail.amount %}円)</li>
-            {% endfor %}
-            </ul>
-
-            {% if not data.purchase.cancel %}
-                <form action="{% url 'store:adminPurchaseCancel' data.purchase.purchase_id %}" method="POST" onsubmit="return confirm('本当にこの注文をキャンセルしますか？（在庫が自動的に戻ります）');">
-                    {% csrf_token %}
-                    <button type="submit" class="btn-danger">この注文をキャンセルする</button>
-                </form>
-            {% endif %}
-
+    <div class="purchase-card {% if data.purchase.cancel %}cancelled{% endif %}">
+        <div class="purchase-card-header">
+            <span style="font-size:14px; font-weight:500;">
+                注文ID: {{ data.purchase.purchase_id }}
+                {% if data.purchase.cancel %}<span style="color:#c0392b; font-size:12px; margin-left:8px;">キャンセル済み</span>{% endif %}
+            </span>
+            <span style="font-size:12px; color:var(--text3);">{{ data.purchase.booked_date|date:"Y/m/d H:i" }}</span>
         </div>
+        <div style="font-size:13px; display:flex; flex-direction:column; gap:6px; margin-bottom:14px;">
+            <span><span style="color:var(--text3);">注文者：</span>{{ data.purchase.user.user_id }}</span>
+            <span><span style="color:var(--text3);">配送先：</span>{{ data.purchase.destination }}</span>
+            <span><span style="color:var(--text3);">合計：</span><strong>¥{{ data.total_price }}</strong></span>
+        </div>
+        <div style="font-size:12px; color:var(--text3); margin-bottom:14px;">
+            {% for detail in data.details %}
+                {{ detail.item.name }} × {{ detail.amount }}個 /
+            {% endfor %}
+        </div>
+        {% if not data.purchase.cancel %}
+        <form action="{% url 'store:adminPurchaseCancel' data.purchase.purchase_id %}" method="POST"
+              onsubmit="return confirm('本当にキャンセルしますか？（在庫が自動的に戻ります）');">
+            {% csrf_token %}
+            <button type="submit" class="btn-danger" style="padding:7px 14px; font-size:12px;">この注文をキャンセルする</button>
+        </form>
+        {% endif %}
+    </div>
     {% empty %}
-        <p class="text-muted">注文履歴が見つかりません。</p>
+    <p style="color:var(--text3); font-size:13px;">注文履歴が見つかりません。</p>
     {% endfor %}
-
-</body>
-</html>
+</div>
+{% endblock %}

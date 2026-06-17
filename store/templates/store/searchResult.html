@@ -1,39 +1,31 @@
+{% extends 'store/base.html' %}
 {% load static %}
-<!DOCTYPE html>
-<html lang="ja">
-<head>
-    <meta charset="UTF-8">
-    <title>検索結果</title>
-    <link rel='stylesheet' type='text/css' href='{% static "accounts/css/style.css" %}' />
-</head>
-<body>
-    <h1>検索結果</h1>
 
-    {% if keyword %}
-        <p>「{{ keyword }}」の検索結果</p>
-    {% endif %}
+{% block title %}検索結果 | SOUGOU STORE{% endblock %}
 
-    <table class="center">
-        <tr>
-            <th>商品名</th>
-            <th>メーカー</th>
-            <th>価格</th>
-            <th>カテゴリ</th>
-        </tr>
+{% block content %}
+<div class="section">
+    <div class="section-header">
+        <span class="section-title">{% if keyword %}「{{ keyword }}」の検索結果{% else %}検索結果{% endif %}</span>
+        <a href="{% url 'store:main' %}" class="section-more">← トップに戻る</a>
+    </div>
+    <div class="product-grid">
         {% for item in results %}
-            <tr>
-                <td><a href="{% url 'store:itemDetail' item.item_id %}">{{ item.name }}</a></td>
-                <td>{{ item.manufacturer }}</td>
-                <td>{{ item.price }}円</td>
-                <td>{{ item.category.name }}</td>
-            </tr>
+        <a href="{% url 'store:itemDetail' item.item_id %}" class="product-card">
+            <div class="product-img">
+                {% if item.recommended %}<span class="badge-new">PICK</span>{% endif %}
+                {% if item.image %}
+                    <img src="{{ item.image.url }}" alt="{{ item.name }}" style="width:100%; height:100%; object-fit:cover;">
+                {% else %}
+                    <span style="font-size: 40px;">🛍️</span>
+                {% endif %}
+            </div>
+            <div class="product-name">{{ item.name }}</div>
+            <div class="product-price">¥{{ item.price }}<span class="product-tax">（税込）</span></div>
+        </a>
         {% empty %}
-            <tr>
-                <td colspan="4">条件に一致する商品は見つかりませんでした。</td>
-            </tr>
+        <p style="color: var(--text2); font-size: 13px; grid-column: 1/-1;">条件に一致する商品は見つかりませんでした。</p>
         {% endfor %}
-    </table>
-
-    <a href="{% url 'store:main' %}" class="back-link">← 商品検索画面に戻る</a>
-</body>
-</html>
+    </div>
+</div>
+{% endblock %}
