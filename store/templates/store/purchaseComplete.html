@@ -1,33 +1,31 @@
+{% extends 'store/base.html' %}
 {% load static %}
-<!DOCTYPE html>
-<html lang="ja">
-<head>
-    <meta charset="UTF-8">
-    <title>注文完了</title>
-    <link rel='stylesheet' type='text/css' href='{% static "accounts/css/style.css" %}' />
-</head>
-<body>
-    <h1>ご注文ありがとうございました！</h1>
+
+{% block title %}注文完了 | SOUGOU STORE{% endblock %}
+
+{% block content %}
+<div class="complete-wrap">
+    <div class="complete-icon">✅</div>
+    <h1 class="complete-title">ご注文ありがとうございました！</h1>
+    <p class="complete-desc">商品の発送準備に取り掛かります。</p>
 
     {% if purchase %}
-    <table class="center">
-        <tr>
-            <th>取引ID</th>
-            <td>{{ purchase.transaction_id }}</td>
-        </tr>
-        <tr>
-            <th>決済ステータス</th>
-            <td>{{ purchase.payment_status }}</td>
-        </tr>
-        <tr>
-            <th>カード下4桁</th>
-            <td>{{ purchase.card_last4 }}</td>
-        </tr>
-    </table>
+    <div class="confirm-card">
+        <div class="confirm-row">
+            <span class="confirm-label">取引ID</span>
+            <span class="confirm-value" style="font-size:11px;">{{ purchase.transaction_id }}</span>
+        </div>
+        <div class="confirm-row">
+            <span class="confirm-label">決済ステータス</span>
+            <span class="confirm-value" style="color:var(--ac);">{{ purchase.payment_status }}</span>
+        </div>
+        <div class="confirm-row">
+            <span class="confirm-label">カード下4桁</span>
+            <span class="confirm-value">**** {{ purchase.card_last4 }}</span>
+        </div>
+    </div>
     {% endif %}
 
-    <p>商品の発送準備に取り掛かります。</p>
-
-    <a href="{% url 'store:main' %}" class="back-link">← トップページへ戻る</a>
-</body>
-</html>
+    <a href="{% url 'store:main' %}"><button class="btn-primary" style="width:100%;">トップページへ戻る</button></a>
+</div>
+{% endblock %}

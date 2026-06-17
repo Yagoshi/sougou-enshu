@@ -1,15 +1,13 @@
+{% extends 'store/base.html' %}
 {% load static %}
-<!DOCTYPE html>
-<html lang="ja">
-<head>
-    <meta charset="UTF-8">
-    <title>会員情報更新完了</title>
-    <link rel='stylesheet' type='text/css' href='{% static "accounts/css/style.css" %}' />
-</head>
-<body class="narrow">
-    <h1>会員情報更新 (完了)</h1>
-    <p>会員情報の更新が完了しました！</p>
 
-    <a href="{% url 'accounts:userInfo' %}" class="back-link">→ 会員情報確認画面へ戻る</a>
-</body>
-</html>
+{% block title %}会員情報更新完了 | SOUGOU STORE{% endblock %}
+
+{% block content %}
+<div class="complete-wrap">
+    <div class="complete-icon">✅</div>
+    <h1 class="complete-title">会員情報を更新しました！</h1>
+    <p class="complete-desc">変更内容が反映されました。</p>
+    <a href="{% url 'accounts:userInfo' %}"><button class="btn-primary" style="width:100%;">マイページへ戻る</button></a>
+</div>
+{% endblock %}

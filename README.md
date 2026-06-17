@@ -1,6 +1,6 @@
 # sougou-enshu
 
-Djangoで構築したECサイトです。商品の閲覧・購入・決済・会員管理などの機能を備えています。
+Djangoで構築したECサイトです。商品の閲覧・購入・決済・会員管理・AIチャットボットなどの機能を備えています。
 
 ---
 
@@ -14,6 +14,8 @@ Djangoで構築したECサイトです。商品の閲覧・購入・決済・会
 - カートへの追加・数量変更・削除
 - クレジットカード決済（模擬決済API連携）
 - 購入履歴の確認
+- 商品レビューの投稿・閲覧（購入済み認証バッジ付き）
+- AIチャットボットによる商品への質問（Gemini API連携）
 
 ### 管理者向け
 - 管理者ログイン
@@ -29,10 +31,11 @@ Djangoで構築したECサイトです。商品の閲覧・購入・決済・会
 |----------|------|
 | バックエンド | Python 3.12 / Django 6.0 |
 | データベース | MySQL 8.0 |
-| フロントエンド | HTML / CSS |
+| フロントエンド | HTML / CSS（独自デザインシステム） |
 | DB接続 | PyMySQL |
 | 決済 | 模擬決済API（debt-trap） |
 | 画像処理 | Pillow |
+| AI チャットボット | Gemini API（google-generativeai） |
 
 ---
 
@@ -55,9 +58,9 @@ sougou-enshu/
 │   ├── migrations/             # マイグレーションファイル
 │   ├── templates/store/        # 商品・カート・購入画面テンプレート
 │   ├── tests/                  # ユニットテスト
-│   ├── models.py               # Category・Item・Cart・Purchaseモデル
-│   ├── views.py                # 商品・カート・購入ビュー
-│   ├── forms.py                # 商品フォーム
+│   ├── models.py               # Category・Item・Cart・Purchase・Reviewモデル
+│   ├── views.py                # 商品・カート・購入・レビュー・チャットボットビュー
+│   ├── forms.py                # 商品・レビューフォーム
 │   └── urls.py                 # 商品・カートURL
 ├── shop01/                     # プロジェクト設定
 │   ├── settings.py             # Django設定
@@ -100,9 +103,10 @@ cp .env.example .env
 VS Codeで `.env` を開いて以下の項目を自分の環境に合わせて編集してください。
 
 ```
-DB_NAME=sougou-enshu       # 自分のDBの名前
-DB_PASSWORD=P@ssw0rd       # 自分のMySQLパスワード
-API_KEY=your-api-key-here  # 模擬決済APIのキー（後述）
+DB_NAME=sougou-enshu        # 自分のDBの名前
+DB_PASSWORD=P@ssw0rd        # 自分のMySQLパスワード
+API_KEY=your-api-key-here   # 模擬決済APIのキー（後述）
+GEMINI_API_KEY=your-gemini-api-key-here  # Gemini APIのキー（後述）
 ```
 
 ### 4. MySQLでデータベースを作成する
@@ -135,7 +139,16 @@ python manage.py seed --clear
 3. ダッシュボードに表示されるAPIキーをコピーする
 4. `.env` の `API_KEY=` に貼り付けて保存する
 
-### 8. 開発サーバーを起動する
+### 8. Gemini APIのキーを取得する
+
+1. ブラウザで https://aistudio.google.com/ を開く
+2. 「Get API key」→「Create API key」をクリックする
+3. 表示されたAPIキーをコピーする
+4. `.env` の `GEMINI_API_KEY=` に貼り付けて保存する
+
+> ⚠️ Gemini APIキーは各自で取得してください。キーがない場合、商品詳細のチャットボットが動作しません。
+
+### 9. 開発サーバーを起動する
 
 ```bash
 python manage.py runserver
@@ -148,7 +161,7 @@ python manage.py runserver
 ## ログイン情報（サンプルデータ）
 
 | 種別 | ID | パスワード |
-|------|----|-----------|
+|------|----|-----------| 
 | 会員 | user001 〜 user005 | password001 〜 password005 |
 | 管理者 | admin001 〜 admin005 | adminpass001 〜 adminpass005 |
 

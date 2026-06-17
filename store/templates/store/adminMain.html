@@ -1,81 +1,74 @@
+{% extends 'store/base.html' %}
 {% load static %}
-<!DOCTYPE html>
-<html lang="ja">
-<head>
-    <meta charset="UTF-8">
-    <title>管理者メインページ</title>
-    <link rel='stylesheet' type='text/css' href='{% static "accounts/css/style.css" %}' />
-</head>
-<body>
 
-    <h1>【管理者専用】メインダッシュボード</h1>
-    <p>ログイン中の管理者: <strong style="color: #16213a;">{{ admin_id }}</strong></p>
+{% block title %}管理者ダッシュボード | SOUGOU STORE{% endblock %}
 
-    <div class="card card-row">
-        <a href="{% url 'store:adminItemAdd' %}" class="btn btn-success">＋ 新規商品を登録する</a>
-        <a href="{% url 'store:adminPurchaseList' %}" class="btn btn-warning">注文履歴の検索・キャンセル</a>
-        <a href="{% url 'store:main' %}" class="btn btn-secondary">一般トップ画面へ</a>
+{% block content %}
+<div class="section">
+    <div class="section-header">
+        <span class="section-title">管理者ダッシュボード<span class="admin-badge">ADMIN</span></span>
+        <span style="font-size:12px; color:var(--text3);">{{ admin_id }} でログイン中</span>
     </div>
 
-    <form method="GET" class="card card-row">
-        <h3 style="flex-basis: 100%;">商品内検索</h3>
-        <label>キーワード:</label>
-        <input type="text" name="keyword" value="{{ keyword|default:'' }}" placeholder="商品名で検索" style="min-width: 200px;">
+    <div style="display:flex; gap:10px; margin-bottom:28px; flex-wrap:wrap;">
+        <a href="{% url 'store:adminItemAdd' %}"><button class="btn-primary">＋ 新規商品を登録</button></a>
+        <a href="{% url 'store:adminPurchaseList' %}"><button class="btn-ghost">注文履歴を管理</button></a>
+        <a href="{% url 'store:main' %}"><button class="btn-ghost">← 一般トップへ</button></a>
+    </div>
 
-        <label style="margin-left: 6px;">カテゴリ:</label>
-        <select name="category" style="min-width: 180px;">
+    <form method="GET" style="display:flex; gap:10px; align-items:center; flex-wrap:wrap; margin-bottom:24px;">
+        <input type="text" name="keyword" value="{{ keyword|default:'' }}" placeholder="商品名で検索" class="form-input" style="max-width:200px;">
+        <select name="category" style="padding:8px 12px; border:1px solid var(--border2); border-radius:var(--radius); font-size:12px; font-family:'Noto Sans JP',sans-serif; color:var(--text2); background:var(--bg);">
             <option value="">すべてのカテゴリ</option>
             {% for cat in categories %}
                 <option value="{{ cat.category_id }}" {% if category_id|slugify == cat.category_id|slugify %}selected{% endif %}>{{ cat.name }}</option>
             {% endfor %}
         </select>
-
-        <button type="submit" style="margin-left: 6px;">絞り込む</button>
-        <a href="{% url 'store:adminMain' %}" class="back-link" style="margin: 0;">クリア</a>
+        <button type="submit" class="btn-primary" style="padding:8px 14px;">絞り込む</button>
+        <a href="{% url 'store:adminMain' %}" style="font-size:12px; color:var(--text3);">クリア</a>
     </form>
 
-    <h2>登録商品一覧</h2>
-    <table>
-        <tr>
-            <th>商品ID</th>
-            <th>商品名</th>
-            <th>メーカー</th>
-            <th>色</th>
-            <th>価格</th>
-            <th>在庫数</th>
-            <th>おすすめ</th>
-            <th>操作</th>
-        </tr>
-        {% for item in items %}
-        <tr>
-            <td class="text-muted">{{ item.item_id }}</td>
-            <td style="font-weight: 600; color: #16213a;">{{ item.name }}</td>
-            <td>{{ item.manufacturer }}</td>
-            <td>{{ item.color }}</td>
-            <td style="font-weight: 600;">{{ item.price }}円</td>
-            <td>{{ item.stock }}個</td>
-
-            <td>
-                <a href="{% url 'store:adminItemToggleRecommend' item.item_id %}" style="text-decoration: none; font-size: 20px; color: #f5a623;">
-                    {% if item.recommended %}★{% else %}☆{% endif %}
-                </a>
-            </td>
-
-            <td>
-                <a href="{% url 'store:adminItemEdit' item.item_id %}" class="btn btn-warning btn-small">編集</a>
-
-                <form action="{% url 'store:adminItemDelete' item.item_id %}" method="POST" style="display: inline-block;" onsubmit="return confirm('本当にこの商品を削除しますか？');">
-                    {% csrf_token %}
-                    <button type="submit" class="btn-danger btn-small">削除</button>
-                </form>
-            </td>
-        </tr>
-        {% empty %}
-        <tr>
-            <td colspan="8" style="text-align: center; padding: 28px;" class="text-muted">該当する商品は登録されていません。</td>
-        </tr>
-        {% endfor %}
+    <table class="data-table">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>商品名</th>
+                <th>メーカー</th>
+                <th>色</th>
+                <th style="text-align:right;">価格</th>
+                <th style="text-align:right;">在庫</th>
+                <th style="text-align:center;">おすすめ</th>
+                <th style="text-align:center;">操作</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for item in items %}
+            <tr>
+                <td style="color:var(--text3); font-size:11px;">{{ item.item_id }}</td>
+                <td style="font-weight:500;">{{ item.name }}</td>
+                <td>{{ item.manufacturer }}</td>
+                <td>{{ item.color }}</td>
+                <td style="text-align:right;">¥{{ item.price }}</td>
+                <td style="text-align:right;">{{ item.stock }}個</td>
+                <td style="text-align:center;">
+                    <a href="{% url 'store:adminItemToggleRecommend' item.item_id %}" style="font-size:20px; color:#f5a623;">
+                        {% if item.recommended %}★{% else %}☆{% endif %}
+                    </a>
+                </td>
+                <td style="text-align:center;">
+                    <div style="display:flex; gap:6px; justify-content:center;">
+                        <a href="{% url 'store:adminItemEdit' item.item_id %}"><button class="btn-ghost" style="padding:5px 10px; font-size:11px;">編集</button></a>
+                        <form action="{% url 'store:adminItemDelete' item.item_id %}" method="POST" style="display:inline;" onsubmit="return confirm('本当に削除しますか？');">
+                            {% csrf_token %}
+                            <button type="submit" class="btn-danger" style="padding:5px 10px; font-size:11px;">削除</button>
+                        </form>
+                    </div>
+                </td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="8" style="text-align:center; padding:28px; color:var(--text3);">該当する商品は登録されていません。</td></tr>
+            {% endfor %}
+        </tbody>
     </table>
-
-</body>
-</html>
+</div>
+{% endblock %}

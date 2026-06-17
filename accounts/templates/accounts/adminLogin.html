@@ -1,35 +1,31 @@
+{% extends 'store/base.html' %}
 {% load static %}
-<!DOCTYPE html>
-<html lang="ja">
-<head>
-    <meta charset="UTF-8">
-    <title>管理者ログイン</title>
-    <link rel='stylesheet' type='text/css' href='{% static "accounts/css/style.css" %}' />
-</head>
-<body class="narrow">
-    <div class="card">
-        <h1 style="text-align: center;">管理者ログイン</h1>
 
-        {% if error_message %}
-            <p class="error" style="font-weight: bold;">{{ error_message }}</p>
-        {% endif %}
+{% block title %}管理者ログイン | SOUGOU STORE{% endblock %}
 
-        <form method="POST">
-            {% csrf_token %}
-            <div style="margin-bottom: 15px;">
-                <label>管理者ID:</label><br>
-                <input type="text" name="admin_id" required style="width: 100%;">
-            </div>
-            <div style="margin-bottom: 15px;">
-                <label>パスワード:</label><br>
-                <input type="password" name="password" required style="width: 100%;">
-            </div>
-            <button type="submit" class="btn-block">ログインする</button>
-        </form>
+{% block content %}
+<div class="form-wrap">
+    <h2 class="form-title">管理者ログイン<span class="admin-badge" style="vertical-align:middle; margin-left:8px;">ADMIN</span></h2>
 
-        <div style="text-align: center; margin-top: 15px;">
-            <a href="{% url 'store:main' %}">一般ユーザー用トップページへぶっとぶ</a>
+    {% if error_message %}
+    <div class="form-error">{{ error_message }}</div>
+    {% endif %}
+
+    <form method="POST" style="display:flex; flex-direction:column; gap:14px;">
+        {% csrf_token %}
+        <div class="form-group">
+            <label class="form-label">管理者ID</label>
+            <input type="text" name="admin_id" required class="form-input">
         </div>
+        <div class="form-group">
+            <label class="form-label">パスワード</label>
+            <input type="password" name="password" required class="form-input">
+        </div>
+        <button type="submit" class="btn-primary" style="width:100%; padding:12px;">ログインする</button>
+    </form>
+
+    <div class="form-links">
+        <a href="{% url 'store:main' %}" class="muted">← 一般トップページへ</a>
     </div>
-</body>
-</html>
+</div>
+{% endblock %}

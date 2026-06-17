@@ -1,26 +1,28 @@
+{% extends 'store/base.html' %}
 {% load static %}
-<!DOCTYPE html>
-<html lang="ja">
-<head>
-    <meta charset="UTF-8">
-    <title>{{ title }}</title>
-    <link rel='stylesheet' type='text/css' href='{% static "accounts/css/style.css" %}' />
-</head>
-<body class="narrow">
 
-    <h1>{{ title }}</h1>
+{% block title %}{{ title }} | SOUGOU STORE{% endblock %}
 
-    <div class="card">
-        <form method="POST" enctype="multipart/form-data">
-            {% csrf_token %}
-            {{ form.as_p }}
-
-            <hr style="border: 0; border-top: 1px solid #eef0f5; margin: 20px 0;">
-
-            <button type="submit" class="btn-success">この内容で保存する</button>
-            <a href="{% url 'store:adminMain' %}" class="back-link" style="margin-left: 15px;">キャンセルして戻る</a>
-        </form>
+{% block content %}
+<div class="section" style="max-width: 600px; margin: 0 auto;">
+    <div class="section-header">
+        <span class="section-title">{{ title }}<span class="admin-badge">ADMIN</span></span>
     </div>
-
-</body>
-</html>
+    <form method="POST" enctype="multipart/form-data" style="display:flex; flex-direction:column; gap:16px;">
+        {% csrf_token %}
+        {% for field in form %}
+        <div class="form-group">
+            <label class="form-label">{{ field.label }}</label>
+            {{ field }}
+            {% if field.errors %}
+            <p style="color:#c0392b; font-size:12px; margin-top:4px;">{{ field.errors|join:", " }}</p>
+            {% endif %}
+        </div>
+        {% endfor %}
+        <div style="display:flex; gap:12px; align-items:center; margin-top:8px;">
+            <button type="submit" class="btn-primary">この内容で保存する</button>
+            <a href="{% url 'store:adminMain' %}" style="font-size:12px; color:var(--text3);">キャンセルして戻る</a>
+        </div>
+    </form>
+</div>
+{% endblock %}
