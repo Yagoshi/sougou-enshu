@@ -79,24 +79,25 @@
 
         <!-- 支払い方法 -->
         <div style="background: var(--bg2); padding: 20px; border-radius: var(--radius-lg); margin-bottom: 20px;">
-            <h2 style="font-size: 14px; margin-bottom: 10px;">
-                お支払方法
-            </h2>
+            <h2 style="font-size: 14px; margin-bottom: 10px;">お支払方法</h2>
 
             <!-- 支払い方法選択 -->
             <select id="payment-method"
                     style="width:100%; padding:8px; border:1px solid var(--border2); border-radius:var(--radius); margin-bottom:10px;">
                 <option value="card" selected>クレジットカード</option>
                 <option value="cod">代金引換</option>
+                <option value="bank">銀行振込</option>
+                <option value="conveni">コンビニ払い</option>
+                <option value="mobile">キャリア決済</option>
             </select>
 
-            <!-- クレジットカード入力 -->
+            <!-- クレジットカード -->
             <div id="card-area">
                 <input type="text" name="card_number"
-                       value="4242424242424242"
-                       maxlength="16"
-                       required
-                       style="width:100%; padding:8px; border:1px solid var(--border2); border-radius:var(--radius);">
+                    value="4242424242424242"
+                    maxlength="16"
+                    required
+                    style="width:100%; padding:8px; border:1px solid var(--border2); border-radius:var(--radius);">
 
                 <p style="font-size:11px; color:var(--text3); margin-top:6px;">
                     ※テスト用カード番号: 4242...（成功） / 4000...（失敗）
@@ -108,6 +109,33 @@
                 <p style="font-size:12px; color:var(--text2);">
                     商品お届け時にお支払いください。
                 </p>
+            </div>
+
+            <!-- 銀行振込 -->
+            <div id="bank-area" style="display:none;">
+                <input type="text" placeholder="振込名義人"
+                    style="width:100%; padding:8px; border:1px solid var(--border2); border-radius:var(--radius); margin-bottom:6px;">
+                <p style="font-size:11px; color:var(--text3);">
+                    ※注文後に振込先情報を表示します
+                </p>
+            </div>
+
+            <!-- コンビニ払い -->
+            <div id="conveni-area" style="display:none;">
+                <select style="width:100%; padding:8px; border:1px solid var(--border2); border-radius:var(--radius);">
+                    <option>セブンイレブン</option>
+                    <option>ローソン</option>
+                    <option>ファミリーマート</option>
+                </select>
+            </div>
+
+            <!-- キャリア決済 -->
+            <div id="mobile-area" style="display:none;">
+                <select style="width:100%; padding:8px; border:1px solid var(--border2); border-radius:var(--radius);">
+                    <option>docomo</option>
+                    <option>au</option>
+                    <option>SoftBank</option>
+                </select>
             </div>
         </div>
 
@@ -163,11 +191,16 @@ document.getElementById('coupon-select').addEventListener('change', function () 
     }
 });
 
-// 支払い方法切替
 document.getElementById("payment-method").addEventListener("change", function() {
     const method = this.value;
-    document.getElementById("card-area").style.display = method === "card" ? "block" : "none";
-    document.getElementById("cod-area").style.display = method === "cod" ? "block" : "none";
+
+    const areas = ["card", "cod", "bank", "conveni", "mobile"];
+
+    areas.forEach(a => {
+        document.getElementById(a + "-area").style.display = "none";
+    });
+
+    document.getElementById(method + "-area").style.display = "block";
 });
 </script>
 
