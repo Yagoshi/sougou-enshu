@@ -8,8 +8,25 @@
 </head>
 <body>
     <h1>ご注文ありがとうございました！</h1>
+
+    {% if purchase %}
+    <table class="center">
+        <tr>
+            <th>取引ID</th>
+            <td>{{ purchase.transaction_id }}</td>
+        </tr>
+        <tr>
+            <th>決済ステータス</th>
+            <td>{{ purchase.payment_status }}</td>
+        </tr>
+        <tr>
+            <th>カード下4桁</th>
+            <td>{{ purchase.card_last4 }}</td>
+        </tr>
+    </table>
+    {% endif %}
+
     <p>商品の発送準備に取り掛かります。</p>
-    <p>お支払いは代金引換となりますので、商品到着時に配達員へお渡しください。</p>
 
     <a href="{% url 'store:main' %}" class="back-link">← トップページへ戻る</a>
 </body>

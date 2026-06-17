@@ -17,6 +17,7 @@ class Item(models.Model):
     price = models.IntegerField()
     stock = models.IntegerField()
     recommended = models.BooleanField(default=False)
+    image = models.ImageField(upload_to='items/', blank=True, null=True)
     
     # 外部キー制約 (DB上は category_id)
     category = models.ForeignKey(Category, on_delete=models.CASCADE)
@@ -45,6 +46,11 @@ class Purchase(models.Model):
     destination = models.CharField(max_length=256)
     booked_date = models.DateTimeField(auto_now_add=True)
     cancel = models.BooleanField(default=False)
+    
+    # 決済API関連
+    transaction_id = models.CharField(max_length=64, blank=True, null=True)
+    payment_status = models.CharField(max_length=16, default='pending')
+    card_last4 = models.CharField(max_length=4, blank=True, null=True)
     
     # 外部キー制約 (DB上は user_id)
     user = models.ForeignKey('accounts.User', on_delete=models.CASCADE)

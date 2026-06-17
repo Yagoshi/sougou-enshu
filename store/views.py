@@ -1,9 +1,11 @@
+import os
+import requests
 from django.shortcuts import render, get_object_or_404, redirect
 from django.db.models import Max
 from django.db import transaction
 from .models import Item, Category, ItemsInCart, Purchase, PurchaseDetail
 from accounts.models import User
-from .forms import ItemForm  
+from .forms import ItemForm
 
 def main(request):
     items = Item.objects.all()
@@ -86,17 +88,68 @@ def checkoutCommit(request):
     if not user_id: return redirect('accounts:login')
     if request.method != 'POST': return redirect('store:cart')
     destination = request.POST.get('destination')
+    card_number = request.POST.get('card_number', '4242424242424242')
     user = get_object_or_404(User, user_id=user_id)
     cart_items = ItemsInCart.objects.filter(user=user)
     if not cart_items: return redirect('store:cart')
 
+    total_price = sum(c.item.price * c.amount for c in cart_items)
+
+    # 決済APIにリクエスト
+    api_base_url = os.environ.get('API_BASE_URL', 'http://15.152.44.182/api/v1')
+    api_key = os.environ.get('API_KEY', '')
+    payment_success = False
+    payment_data = {}
+
+    try:
+        res = requests.post(
+            f"{api_base_url}/payments/charge",
+            headers={
+                'X-API-Key': api_key,
+                'Content-Type': 'application/json',
+            },
+            json={
+                'amount': total_price,
+                'currency': 'JPY',
+                'card_number': card_number,
+                'description': f'User:{user_id}',
+            },
+            timeout=10,
+        )
+        if res.status_code in [200, 201]:
+            payment_data = res.json()
+            if payment_data.get('status') == 'succeeded':
+                payment_success = True
+    except requests.exceptions.RequestException:
+        pass
+
+    if not payment_success:
+        error_message = '決済に失敗しました。カード情報を確認して再度お試しください。'
+        if payment_data.get('error'):
+            error_message += f"（{payment_data['error'].get('message', '')}）"
+        context = {
+            'user': user,
+            'cart_items': cart_items,
+            'total_price': total_price,
+            'error_message': error_message,
+        }
+        return render(request, 'store/checkout.html', context)
+
+    # 決済成功時：注文をDBに保存
     with transaction.atomic():
         for c_item in cart_items:
             if c_item.amount > c_item.item.stock:
                 return redirect('store:cart')
         max_p = Purchase.objects.aggregate(Max('purchase_id'))['purchase_id__max']
         next_p_id = (max_p or 0) + 1
-        purchase = Purchase.objects.create(purchase_id=next_p_id, destination=destination, user=user)
+        purchase = Purchase.objects.create(
+            purchase_id=next_p_id,
+            destination=destination,
+            user=user,
+            transaction_id=payment_data.get('transaction_id', ''),
+            payment_status=payment_data.get('status', 'unknown'),
+            card_last4=payment_data.get('card_last4', ''),
+        )
         max_pd = PurchaseDetail.objects.aggregate(Max('purchase_detail_id'))['purchase_detail_id__max']
         next_pd_id = (max_pd or 0) + 1
         for c_item in cart_items:
@@ -105,8 +158,7 @@ def checkoutCommit(request):
             c_item.item.stock -= c_item.amount
             c_item.item.save()
         cart_items.delete()
-    return render(request, 'store/purchaseComplete.html')
-
+    return render(request, 'store/purchaseComplete.html', {'purchase': purchase})
 
 
 # 管理者メインページ（商品検索一覧）
@@ -141,7 +193,7 @@ def adminItemAdd(request):
     if not admin_id: return redirect('accounts:adminLogin')
     
     if request.method == 'POST':
-        form = ItemForm(request.POST)
+        form = ItemForm(request.POST, request.FILES)
         if form.is_valid():
             form.save()
             return redirect('store:adminMain')
@@ -157,7 +209,7 @@ def adminItemEdit(request, item_id):
     
     item = get_object_or_404(Item, item_id=item_id)
     if request.method == 'POST':
-        form = ItemForm(request.POST, instance=item)
+        form = ItemForm(request.POST, request.FILES, instance=item)
         if form.is_valid():
             form.save()
             return redirect('store:adminMain')

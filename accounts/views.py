@@ -1,4 +1,5 @@
 from django.shortcuts import render, redirect, get_object_or_404
+from django.contrib.auth.hashers import make_password, check_password
 from .models import User, Admin 
 from .forms import UserForm, UserUpdateForm
 from store.models import Purchase, PurchaseDetail
@@ -10,9 +11,12 @@ def login(request):
         input_user_id = request.POST.get('user_id')
         input_password = request.POST.get('password')
         try:
-            user = User.objects.get(user_id=input_user_id, password=input_password)
-            request.session['login_user_id'] = user.user_id
-            return redirect('store:main')
+            user = User.objects.get(user_id=input_user_id)
+            if check_password(input_password, user.password):
+                request.session['login_user_id'] = user.user_id
+                return redirect('store:main')
+            else:
+                error_message = '会員IDまたはパスワードが間違っています。'
         except User.DoesNotExist:
             error_message = '会員IDまたはパスワードが間違っています。'
     return render(request, 'accounts/login.html', {'error_message': error_message})
@@ -44,7 +48,7 @@ def registerUserCommit(request):
         return redirect('accounts:registerUser')
     User.objects.create(
         user_id=data['user_id'],
-        password=data['password'],
+        password=make_password(data['password']),
         name=data['name'],
         address=data['address']
     )
@@ -126,6 +130,8 @@ def updateUserCommit(request):
     user = get_object_or_404(User, user_id=user_id)
     user.name = data['name']
     user.address = data['address']
+    if 'new_password' in data and data['new_password']:
+        user.password = make_password(data['new_password'])
     user.save()
 
     del request.session['update_data']
