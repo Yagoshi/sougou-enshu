@@ -7,18 +7,1182 @@
 <div class="form-wrap">
     <h2 class="form-title">退会確認</h2>
 
-    <div style="background:#fff0f0; border:1px solid #ffcccc; border-radius:var(--radius-lg); padding:20px; margin-bottom:24px;">
-        <h3 style="color:#c0392b; font-size:15px; margin-bottom:10px;">本当に退会しますか？</h3>
-        <p style="font-size:13px; color:var(--text2); line-height:1.7;">この操作は取り消すことができません。退会すると、会員情報およびカートの内容がすべて削除されます。</p>
+    <div class="withdraw-warn">
+        <h3>本当に退会しますか？</h3>
+        <p>
+            この操作は取り消すことができません。退会すると、会員情報およびカートの内容がすべて削除されます。
+        </p>
     </div>
 
-    <form method="POST">
-        {% csrf_token %}
-        <button type="submit" class="btn-danger" style="width:100%; padding:12px;">退会する</button>
-    </form>
+    <div style="padding:1rem 0;">
+        <style>
+        .withdraw-warn{
+        background:#fff0f0;
+        border:1px solid #ffcccc;
+        border-radius:var(--radius-lg);
+        padding:20px;
+        margin-bottom:24px;
+        width:130%;
+        margin-left:-15%;
+        box-sizing:border-box;
+        }
+        .form-title{
+        width:130%;
+        margin-left:-15%;
+        }
+        .withdraw-warn h3{
+          color:#c0392b;
+          font-size:15px;
+          margin-bottom:10px;
+        }
+        .withdraw-warn p{
+          font-size:13px;
+          color:var(--text2);
+          line-height:1.7;
+        }
+
+        .gw6{
+            background:var(--color-background-primary, #fff);
+            border:0.5px solid var(--color-border-tertiary, #ddd);
+            border-radius:var(--border-radius-lg, 14px);
+            padding:1rem 1.25rem;
+            width:130%;
+            margin-left:-15%;
+            box-sizing:border-box;
+            }
+        .g-tag6{
+          display:inline-block;
+          font-size:12px;
+          font-weight:500;
+          color:var(--color-text-info, #2563eb);
+          background:var(--color-background-info, #eff6ff);
+          padding:3px 10px;
+          border-radius:var(--border-radius-md, 999px);
+          margin-bottom:14px;
+        }
+
+        .gc6{
+            position:relative;
+            width:100%;
+            max-width:none;
+            height:220px;
+            min-width:260px;
+            margin:0 auto;
+            }
+
+        .rh6{
+          position:absolute;
+          bottom:0;
+          right:0;
+          padding:8px;
+          cursor:se-resize;
+          z-index:10;
+          font-size:14px;
+          color:#bbb;
+          line-height:1;
+        }
+        .gm6{
+          width:100%;
+          height:100%;
+          background:#f7f7f0;
+          border-radius:12px;
+          overflow:hidden;
+          border:1px solid #ccc;
+          cursor:pointer;
+          user-select:none;
+          position:relative;
+        }
+        .gnd6{
+          position:absolute;
+          bottom:40px;
+          left:0;
+          right:0;
+          height:2px;
+          background:#555;
+        }
+        .gsc6{
+          position:absolute;
+          bottom:43px;
+          left:0;
+          width:600%;
+          height:1px;
+          background:repeating-linear-gradient(90deg,#bbb 0,#bbb 18px,transparent 18px,transparent 36px);
+        }
+        .sl6{
+          position:absolute;
+          left:60px;
+          bottom:42px;
+          width:2px;
+          height:36px;
+          background:repeating-linear-gradient(180deg,#bbb 0,#bbb 5px,transparent 5px,transparent 10px);
+        }
+        .sl6::after{
+          content:'START';
+          position:absolute;
+          top:-16px;
+          left:4px;
+          font-size:10px;
+          color:#bbb;
+          letter-spacing:.05em;
+          white-space:nowrap;
+        }
+
+        .pl6{
+          position:absolute;
+          bottom:42px;
+          left:60px;
+          display:flex;
+          flex-direction:column;
+          align-items:center;
+          transform-origin:bottom center;
+        }
+        .ph6{
+          width:28px;
+          height:28px;
+          border:3px solid #333;
+          background:#f7f7f0;
+          border-radius:4px;
+          position:relative;
+          display:flex;
+          align-items:center;
+          justify-content:center;
+          transition:border-color .24s, box-shadow .24s, background .24s, transform .24s;
+        }
+        .pfc6{
+          font-size:8px;
+          color:#333;
+          pointer-events:none;
+          position:absolute;
+          top:8px;
+          right:4px;
+          transition:right .25s, top .25s, font-size .25s;
+          white-space:nowrap;
+          letter-spacing:0;
+        }
+        .pfc6::after{content:"''";}
+
+        .plgs6{
+          display:flex;
+          gap:6px;
+          margin-top:2px;
+        }
+        .lg6{
+          width:5px;
+          height:16px;
+          background:#333;
+          border-radius:2px;
+          transform-origin:top center;
+        }
+        .lg6:nth-child(1){animation:lL6 .35s ease-in-out infinite;}
+        .lg6:nth-child(2){animation:lR6 .35s ease-in-out infinite;}
+
+        @keyframes lL6{
+          0%,100%{transform:rotate(-25deg);}
+          50%{transform:rotate(25deg);}
+        }
+        @keyframes lR6{
+          0%,100%{transform:rotate(25deg);}
+          50%{transform:rotate(-25deg);}
+        }
+
+        .pl6.jumping{animation:jmp6 .55s ease-out forwards;}
+        @keyframes jmp6{
+          0%{transform:translateY(0) scaleY(1) scaleX(1);}
+          8%{transform:translateY(0) scaleY(.7) scaleX(1.3);}
+          20%{transform:translateY(-50px) scaleY(1.15) scaleX(.9);}
+          45%{transform:translateY(-90px) scaleY(1) scaleX(1);}
+          60%{transform:translateY(-90px) scaleY(1) scaleX(1);}
+          85%{transform:translateY(-10px) scaleY(.8) scaleX(1.2);}
+          92%{transform:translateY(0) scaleY(.65) scaleX(1.35);}
+          100%{transform:translateY(0) scaleY(1) scaleX(1);}
+        }
+
+        .pl6.crouching .ph6{transform:translateY(10px) scaleY(.7);}
+        .pl6.crouching .lg6{height:8px;}
+        .pl6.crouching .plgs6{margin-top:12px;}
+
+        .pl6.paused .pfc6{right:8px;}
+        .pl6.paused .pfc6::after{content:"'`";}
+        .pl6.paused .ph6{
+          border-color:#6d5cff;
+          box-shadow:0 0 0 2px #6d5cff;
+        }
+        .pl6.paused .lg6{animation-play-state:paused;}
+
+        /* ゲーム中の悲しみ */
+        .pl6.sad .pfc6::after{content:"ハ";}
+        .pl6.sad .pfc6{
+          right:2px;
+          top:8px;
+          font-size:8px;
+        }
+        .pl6.sad .ph6{
+          border-color:#3b82f6;
+          box-shadow:0 0 12px rgba(59,130,246,.45), 0 0 0 2px #3b82f6;
+          background:#eff6ff;
+          animation:swg6 .7s ease-in-out infinite;
+        }
+        .pl6.sad .lg6{animation-play-state:paused;}
+        @keyframes swg6{
+          0%,100%{transform:scaleY(.68) translateY(7px) rotate(-6deg);}
+          50%{transform:scaleY(.68) translateY(7px) rotate(6deg);}
+        }
+
+        /* ゲーム中の喜び */
+        .pl6.happy .pfc6::after{content:"^^";}
+        .pl6.happy .pfc6{
+          right:5px;
+          top:8px;
+          font-size:8px;
+        }
+        .pl6.happy .ph6{
+          border-color:#059669;
+          box-shadow:0 0 14px rgba(5,150,105,.5), 0 0 0 2px #059669;
+          background:#f0fdf4;
+        }
+        .pl6.happy .lg6{animation-play-state:running;}
+        .pl6.celebrate{
+          animation:cel6 .6s ease-out forwards;
+        }
+        @keyframes cel6{
+          0%{transform:translateY(0) scaleX(1) scaleY(1);}
+          10%{transform:translateY(0) scaleX(1.18) scaleY(.74);}
+          28%{transform:translateY(-36px) scaleX(.95) scaleY(1.07);}
+          48%{transform:translateY(-82px) scaleX(.98) scaleY(1.02);}
+          65%{transform:translateY(-54px) scaleX(1) scaleY(1);}
+          82%{transform:translateY(-10px) scaleX(1.12) scaleY(.84);}
+          92%{transform:translateY(0) scaleX(1.2) scaleY(.78);}
+          100%{transform:translateY(0) scaleX(1) scaleY(1);}
+        }
+
+        .ct6{
+          position:absolute;
+          bottom:42px;
+          width:18px;
+          height:40px;
+          background:#555;
+          border-radius:3px 3px 0 0;
+          left:120%;
+        }
+        .ct6::before{
+          content:'';
+          position:absolute;
+          width:9px;
+          height:22px;
+          background:#555;
+          top:6px;
+          left:-9px;
+          border-radius:3px 0 0 3px;
+        }
+        .ct6::after{
+          content:'';
+          position:absolute;
+          width:9px;
+          height:22px;
+          background:#555;
+          top:10px;
+          right:-9px;
+          border-radius:0 3px 3px 0;
+        }
+
+        .pw6{
+          position:absolute;
+          top:10px;
+          left:14px;
+          right:14px;
+          height:6px;
+          background:#e0e0d8;
+          border-radius:3px;
+          overflow:hidden;
+        }
+        .pfb6{
+          height:100%;
+          width:0%;
+          border-radius:3px;
+          background:linear-gradient(90deg,#48bb78,#e53e3e);
+          transition:width .3s;
+        }
+
+        .qb6{
+          position:absolute;
+          top:50%;
+          left:110%;
+          transform:translateY(-50%);
+          padding:11px 22px;
+          background:linear-gradient(135deg,#e53e3e,#c53030);
+          color:#fff;
+          border:none;
+          border-radius:10px;
+          font-size:14px;
+          font-weight:700;
+          cursor:pointer;
+          white-space:nowrap;
+          pointer-events:none;
+          transition:left 1.5s cubic-bezier(.2,.8,.2,1);
+          z-index:5;
+        }
+        .qb6.enabled{
+          pointer-events:auto;
+          animation:qp6 1.3s ease-in-out infinite;
+        }
+        @keyframes qp6{
+          0%,100%{box-shadow:0 4px 14px rgba(229,62,62,.35);}
+          50%{box-shadow:0 4px 22px rgba(229,62,62,.65);}
+        }
+
+        .po6{
+          position:absolute;
+          inset:0;
+          background:rgba(247,247,240,.08);
+          display:none;
+          align-items:center;
+          justify-content:center;
+          z-index:8;
+        }
+        .po6.show{display:flex;}
+        .plb6{
+          font-size:13px;
+          font-weight:700;
+          color:#6d5cff;
+          letter-spacing:.1em;
+          background:rgba(247,247,240,.9);
+          padding:6px 14px;
+          border-radius:8px;
+          border:1.5px solid #6d5cff;
+        }
+
+        .ov6{
+          position:absolute;
+          inset:0;
+          background:rgba(247,247,240,.92);
+          display:none;
+          flex-direction:column;
+          align-items:center;
+          justify-content:center;
+          gap:8px;
+          z-index:20;
+        }
+        .ov6.show{display:flex;}
+        .ov6-t{
+          font-size:20px;
+          font-weight:700;
+          color:#333;
+          letter-spacing:.1em;
+        }
+        .ov6-s{
+          font-size:13px;
+          color:#777;
+        }
+
+        /* 終了画面 */
+        .cl6{
+          position:absolute;
+          inset:0;
+          display:none;
+          align-items:center;
+          justify-content:center;
+          z-index:22;
+        }
+        .cl6.show{display:flex;}
+        .cl6.cancel{
+          background:rgba(240,253,244,.97);
+        }
+        .cl6.quit{
+          background:rgba(239,246,255,.97);
+        }
+
+        .cl6-wrap{
+          width:100%;
+          height:100%;
+          display:flex;
+          align-items:center;
+          justify-content:center;
+          gap:34px;
+          padding:22px 28px;
+          box-sizing:border-box;
+        }
+        .cl6-left{
+          display:flex;
+          align-items:flex-end;
+          justify-content:center;
+          min-width:120px;
+        }
+        .cl6-right{
+          text-align:center;
+        }
+        .cl6-t{
+          font-size:20px;
+          font-weight:700;
+          color:#059669;
+          text-align:center;
+          line-height:1.5;
+        }
+        .cl6.quit .cl6-t{
+          color:#2563eb;
+        }
+        .cl6-s{
+          font-size:13px;
+          color:#555;
+          text-align:center;
+          line-height:1.9;
+          margin-top:14px;
+        }
+
+        .cl6-links{
+          margin-top:16px;
+          display:flex;
+          justify-content:center;
+          gap:10px;
+          flex-wrap:wrap;
+        }
+        .cl6-link{
+          display:inline-flex;
+          align-items:center;
+          justify-content:center;
+          min-width:180px;
+          padding:11px 16px;
+          border-radius:10px;
+          font-size:14px;
+          font-weight:700;
+          text-decoration:none;
+          transition:.15s ease;
+        }
+        .cl6-link:hover{
+          transform:translateY(-1px);
+          filter:brightness(.97);
+        }
+        .cl6-link-primary{
+          background:linear-gradient(135deg,#10b981,#059669);
+          color:#fff;
+        }
+        .cl6-link-secondary{
+          background:#fff;
+          border:1px solid #d1d5db;
+          color:#374151;
+        }
+
+        /* 終了画面のキャラ */
+        .ec6{
+          position:relative;
+          display:flex;
+          flex-direction:column;
+          align-items:center;
+          justify-content:flex-end;
+          transform-origin:bottom center;
+        }
+        .ec6-head{
+          width:38px;
+          height:38px;
+          border:3px solid #333;
+          background:#f7f7f0;
+          border-radius:6px;
+          position:relative;
+          box-sizing:border-box;
+        }
+        .ec6-face{
+          position:absolute;
+          top:10px;
+          right:4px;
+          font-size:10px;
+          color:#333;
+          letter-spacing:0;
+          white-space:nowrap;
+        }
+        .ec6-body{
+          position:relative;
+          width:52px;
+          height:32px;
+          margin-top:4px;
+        }
+        .ec6-leg{
+          position:absolute;
+          width:6px;
+          height:24px;
+          background:#333;
+          border-radius:2px;
+          transform-origin:top center;
+        }
+        .ec6-leg.left{
+          left:17px;
+          bottom:0;
+        }
+        .ec6-leg.right{
+          left:29px;
+          bottom:0;
+        }
+
+        /* 中止画面 */
+        .cl6.cancel .ec6-head{
+          border-color:#059669;
+          box-shadow:0 0 16px rgba(5,150,105,.45), 0 0 0 2px #059669;
+          background:#f0fdf4;
+        }
+        .cl6.cancel .ec6-face::after{
+          content:"^^";
+        }
+        .cl6.cancel .ec6{
+          animation:endHappyJump6 .95s ease-in-out infinite;
+        }
+        .cl6.cancel .ec6-leg.left{
+          animation:endHappyFeetL6 .95s linear infinite;
+        }
+        .cl6.cancel .ec6-leg.right{
+          animation:endHappyFeetR6 .95s linear infinite;
+        }
+        @keyframes endHappyJump6{
+          0%{transform:translateY(0) scaleX(1) scaleY(1);}
+          10%{transform:translateY(0) scaleX(1.12) scaleY(.82);}
+          26%{transform:translateY(-16px) scaleX(.98) scaleY(1.04);}
+          40%{transform:translateY(-34px) scaleX(1) scaleY(1);}
+          52%{transform:translateY(-34px) scaleX(1) scaleY(1);}
+          72%{transform:translateY(-8px) scaleX(1.06) scaleY(.9);}
+          84%{transform:translateY(0) scaleX(1.12) scaleY(.82);}
+          100%{transform:translateY(0) scaleX(1) scaleY(1);}
+        }
+        @keyframes endHappyFeetL6{
+          0%,14%,76%,100%{transform:rotate(0deg);}
+          26%{transform:rotate(-26deg);}
+          36%{transform:rotate(22deg);}
+          46%{transform:rotate(-18deg);}
+          58%{transform:rotate(14deg);}
+        }
+        @keyframes endHappyFeetR6{
+          0%,14%,76%,100%{transform:rotate(0deg);}
+          26%{transform:rotate(26deg);}
+          36%{transform:rotate(-22deg);}
+          46%{transform:rotate(18deg);}
+          58%{transform:rotate(-14deg);}
+        }
+
+        /* 退会画面 */
+        .cl6.quit .ec6-head{
+          border-color:#3b82f6;
+          box-shadow:0 0 16px rgba(59,130,246,.42), 0 0 0 2px #3b82f6;
+          background:#eff6ff;
+        }
+        .cl6.quit .ec6-face{
+          top:9px;
+          right:2px;
+          font-size:9px;
+        }
+        .cl6.quit .ec6-face::after{
+          content:"ハ";
+        }
+        .cl6.quit .ec6{
+          animation:endSadFloat6 1s ease-in-out infinite;
+        }
+        .cl6.quit .ec6-leg.left{
+          left:22px;
+          bottom:0;
+          height:20px;
+        }
+        .cl6.quit .ec6-leg.right{
+          left:34px;
+          top:-8px;
+          height:22px;
+          transform-origin:2px 0px;
+          animation:endWaveLeg6 .85s ease-in-out infinite;
+        }
+        @keyframes endSadFloat6{
+          0%,100%{transform:translateY(0);}
+          50%{transform:translateY(4px);}
+        }
+        /* 手振り角度はここを自分で調整 */
+        @keyframes endWaveLeg6{
+          0%,100%{transform:rotate(200deg);}
+          25%{transform:rotate(170deg);}
+          50%{transform:rotate(220deg);}
+          75%{transform:rotate(180deg);}
+        }
+
+        .it6{
+          position:absolute;
+          inset:0;
+          background:rgba(247,247,240,.97);
+          display:flex;
+          flex-direction:column;
+          align-items:center;
+          justify-content:center;
+          gap:8px;
+          z-index:25;
+          border-radius:12px;
+        }
+        .it6-t{
+          font-size:18px;
+          font-weight:700;
+          color:#333;
+        }
+        .it6-d{
+          font-size:12px;
+          color:#666;
+          line-height:1.9;
+          text-align:center;
+        }
+
+        .ht6{
+          position:absolute;
+          bottom:8px;
+          width:100%;
+          text-align:center;
+          font-size:11px;
+          color:#aaa;
+        }
+
+        .br6{
+          margin-top:12px;
+          display:flex;
+          gap:8px;
+        }
+        .bt6{
+          flex:1;
+          padding:12px;
+          border-radius:10px;
+          font-size:14px;
+          font-weight:700;
+          text-align:center;
+          cursor:pointer;
+          border:none;
+          color:#fff;
+          transition:transform .08s, filter .08s, background .2s;
+        }
+        .bt6:active{
+          transform:scale(.95);
+          filter:brightness(.85);
+        }
+        .bt6-s{
+          background:linear-gradient(135deg,#333,#555);
+        }
+        .bt6-p{
+          background:linear-gradient(135deg,#6d5cff,#534AB7);
+        }
+        .bt6-c{
+          background:linear-gradient(135deg,#10b981,#059669);
+        }
+
+        .form-links{
+          margin-top:18px;
+          text-align:center;
+        }
+        .form-links a{
+          color:#6b7280;
+          text-decoration:none;
+        }
+        .form-links a:hover{
+          text-decoration:underline;
+        }
+        </style>
+
+        <div class="gw6">
+          <span class="g-tag6">退会ゲー ── Space/↑ジャンプ　↓しゃがむ　Escで一時停止</span>
+
+          <div class="gc6" id="gc6">
+            <div class="gm6" id="gm6">
+              <div class="gnd6"></div>
+              <div class="gsc6" id="gsc6"></div>
+              <div class="sl6" id="sl6"></div>
+
+              <div class="pl6" id="pl6">
+                <div class="ph6"><span class="pfc6"></span></div>
+                <div class="plgs6">
+                  <div class="lg6" id="lg61"></div>
+                  <div class="lg6" id="lg62"></div>
+                </div>
+              </div>
+
+              <div class="ct6" id="ct61"></div>
+
+              <div class="pw6">
+                <div class="pfb6" id="pfb6"></div>
+              </div>
+
+              <button type="button" class="qb6" id="qb6">退会する</button>
+
+              <div class="po6" id="po6"><span class="plb6">PAUSED</span></div>
+
+              <div class="ov6" id="ov6">
+                <div class="ov6-t">GAME OVER</div>
+                <div class="ov6-s">Space / ↑ / クリックでリスタート</div>
+              </div>
+
+              <div class="cl6" id="cl6">
+                <div class="cl6-wrap">
+                  <div class="cl6-left">
+                    <div class="ec6" id="ec6">
+                      <div class="ec6-head">
+                        <span class="ec6-face"></span>
+                      </div>
+                      <div class="ec6-body">
+                        <div class="ec6-leg left"></div>
+                        <div class="ec6-leg right"></div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="cl6-right">
+                    <div class="cl6-t" id="cl6t">🎉 退会を中止しました！ありがとうございます</div>
+                    <div class="cl6-s" id="cl6s">
+                      引き続きご利用いただけます。<br>
+                      またいつでも遊びにきてください。
+                    </div>
+
+                    <div class="cl6-links" id="cl6links">
+                      <a href="{% url 'accounts:userInfo' %}" class="cl6-link cl6-link-primary" id="cancelBackLink">
+                        最初のページへ戻る
+                      </a>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="it6" id="it6">
+                <div class="it6-t">退会ゲー</div>
+                <div class="it6-d">
+                  サボテンを避け続けてください<br>
+                  20秒生き残ると退会ボタンが流れてきます
+                </div>
+              </div>
+
+              <div class="ht6">Space/↑ジャンプ　↓しゃがむ　Esc一時停止</div>
+            </div>
+
+            <div class="rh6" id="rh6">◢</div>
+          </div>
+
+          <div class="br6">
+            <button type="button" class="bt6 bt6-s" id="sb6">スタート</button>
+            <button type="button" class="bt6 bt6-p" id="pb6">一時停止</button>
+          </div>
+        </div>
+    </div>
 
     <div class="form-links">
         <a href="{% url 'accounts:userInfo' %}" class="muted">← マイページに戻る</a>
     </div>
 </div>
+
+<script>
+(function(){
+  const WITHDRAW_COMMIT_URL = "{% url 'accounts:withdrawCommit' %}";
+  const FIRST_PAGE_URL = "{% url 'accounts:userInfo' %}";
+
+  const con = document.getElementById('gc6');
+  const gm  = document.getElementById('gm6');
+  const pl  = document.getElementById('pl6');
+  const ov  = document.getElementById('ov6');
+  const cl  = document.getElementById('cl6');
+  const clt = document.getElementById('cl6t');
+  const cls = document.getElementById('cl6s');
+  const cl6links = document.getElementById('cl6links');
+  const cancelBackLink = document.getElementById('cancelBackLink');
+  const it  = document.getElementById('it6');
+  const gsc = document.getElementById('gsc6');
+  const sl  = document.getElementById('sl6');
+  const l1  = document.getElementById('lg61');
+  const l2  = document.getElementById('lg62');
+  const c1  = document.getElementById('ct61');
+  const pf  = document.getElementById('pfb6');
+  const qb  = document.getElementById('qb6');
+  const po  = document.getElementById('po6');
+  const sb  = document.getElementById('sb6');
+  const pb  = document.getElementById('pb6');
+  const rh  = document.getElementById('rh6');
+
+  cancelBackLink.href = FIRST_PAGE_URL;
+
+  const CLEAR_SEC = 20;
+  const SPD = 2.2;
+  const CACTUS_START = 3000;
+  const CACTUS_INTERVAL = 2500;
+
+  let alive = false;
+  let paused = false;
+  let cleared = false;
+  let crouching = false;
+  let started = false;
+  let score = 0;
+  let sT, cT, smT;
+  let c1a = false;
+  let sx = 60;
+  let phase = 'normal';
+  let cactusTimers = [];
+  let navigating = false;
+
+  const st = document.createElement('style');
+  st.textContent = `
+    @keyframes gs6{to{transform:translateX(-16.6%);}}
+    @keyframes cm6{0%{left:110%;}100%{left:-15%;}}
+  `;
+  document.head.appendChild(st);
+
+  gsc.style.animation = 'gs6 1s linear infinite';
+  gsc.style.animationPlayState = 'paused';
+
+  let rz=false, rx=0, ry=0, rw=0, rhv=0;
+  rh.addEventListener('mousedown',e=>{
+    rz=true;
+    rx=e.clientX;
+    ry=e.clientY;
+    rw=con.offsetWidth;
+    rhv=con.offsetHeight;
+    e.preventDefault();
+  });
+  document.addEventListener('mousemove',e=>{
+    if(!rz) return;
+    con.style.width = Math.max(260, rw + (e.clientX-rx)) + 'px';
+    con.style.height = Math.max(180, rhv + (e.clientY-ry)) + 'px';
+  });
+  document.addEventListener('mouseup',()=>rz=false);
+
+  function aa(state){
+    [gsc, c1, pl, l1, l2].forEach(e => e.style.animationPlayState = state);
+  }
+
+  function resetPlayerState(){
+    pl.classList.remove('jumping','crouching','paused','sad','happy','celebrate');
+  }
+
+  function resetEndLinks(){
+    cl6links.innerHTML = '';
+  }
+
+  function openEndScreen(type){
+    cl.classList.remove('cancel','quit');
+    cl.classList.add('show', type);
+    resetEndLinks();
+
+    if(type === 'cancel'){
+      clt.textContent = '🎉 退会を中止しました！ありがとうございます';
+      cls.innerHTML = '引き続きご利用いただけます。<br>またいつでも遊びにきてください。';
+
+      const a = document.createElement('a');
+      a.href = FIRST_PAGE_URL;
+      a.className = 'cl6-link cl6-link-primary';
+      a.textContent = '最初のページへ戻る';
+      cl6links.appendChild(a);
+    }else{
+      clt.textContent = '退会します';
+      cls.innerHTML = 'このまま退会確定画面へ進みます。';
+
+      const span = document.createElement('span');
+      span.className = 'cl6-link cl6-link-secondary';
+      span.textContent = '退会処理へ移動中...';
+      cl6links.appendChild(span);
+    }
+  }
+
+  function stopGameCompletely(){
+    alive = false;
+    paused = false;
+    clearInterval(sT);
+    clearInterval(cT);
+    clearInterval(smT);
+    clearCactusTimers();
+    po.classList.remove('show');
+    aa('paused');
+    c1.style.animation = 'none';
+    c1.style.left = '120%';
+    c1a = false;
+  }
+
+  function launchCactus(){
+    if(!alive || phase !== 'normal') return;
+    c1.style.animation = 'none';
+    c1.style.left = '110%';
+    void c1.offsetWidth;
+    c1.style.animation = `cm6 ${SPD}s linear forwards`;
+    c1a = true;
+
+    c1.addEventListener('animationend',()=>{
+      c1.style.animation = 'none';
+      c1.style.left = '120%';
+      c1a = false;
+    }, { once:true });
+  }
+
+  function clearCactusTimers(){
+    cactusTimers.forEach(clearTimeout);
+    cactusTimers = [];
+  }
+
+  function scheduleCactus(delay){
+    const t = setTimeout(()=>{
+      if(!alive || phase !== 'normal') return;
+      launchCactus();
+      scheduleCactus(CACTUS_INTERVAL);
+    }, delay);
+    cactusTimers.push(t);
+  }
+
+  function slideQuitBtn(){
+    const gmW = gm.offsetWidth;
+    const btnW = qb.offsetWidth || 80;
+    qb.style.left = Math.floor((gmW - btnW)/2) + 'px';
+  }
+
+  function us(s){
+    score = s;
+    const p = Math.min(100, (s/(CLEAR_SEC*10))*100);
+    pf.style.width = p + '%';
+
+    if(s >= CLEAR_SEC*10*0.9 && phase === 'normal'){
+      phase = 'approach90';
+      clearCactusTimers();
+      c1.style.animation = 'none';
+      c1.style.left = '120%';
+      c1a = false;
+      slideQuitBtn();
+    }
+
+    if(s >= CLEAR_SEC*10 && !cleared){
+      cleared = true;
+      tc();
+    }
+  }
+
+  function tc(){
+    alive = false;
+    clearInterval(sT);
+    clearInterval(cT);
+    clearInterval(smT);
+    clearCactusTimers();
+    [gsc,pl,l1,l2].forEach(e => e.style.animationPlayState = 'paused');
+
+    setTimeout(()=>{
+      qb.classList.add('enabled');
+      resetPlayerState();
+      pl.classList.add('sad');
+    },400);
+  }
+
+  function doQuit(){
+    if(navigating) return;
+    navigating = true;
+
+    qb.classList.remove('enabled');
+    qb.style.display = 'none';
+    stopGameCompletely();
+    resetPlayerState();
+    openEndScreen('quit');
+
+    setTimeout(()=>{
+      window.location.href = WITHDRAW_COMMIT_URL;
+    }, 850);
+  }
+
+  function doCancelQuit(){
+    stopGameCompletely();
+    qb.classList.remove('enabled');
+    qb.style.display = 'none';
+
+    pb.textContent = '一時停止';
+    pb.classList.remove('bt6-c');
+    pb.classList.add('bt6-p');
+
+    resetPlayerState();
+    pl.classList.add('happy','celebrate');
+
+    setTimeout(()=>{
+      openEndScreen('cancel');
+    },600);
+  }
+
+  qb.addEventListener('click',()=>{
+    if(!qb.classList.contains('enabled')) return;
+    doQuit();
+  });
+
+  function sg(){
+    navigating = false;
+
+    if(!started){
+      it.style.display = 'none';
+      started = true;
+    }
+
+    alive = true;
+    cleared = false;
+    paused = false;
+    crouching = false;
+    score = 0;
+    c1a = false;
+    phase = 'normal';
+
+    resetPlayerState();
+    ov.classList.remove('show');
+    cl.classList.remove('show','cancel','quit');
+    po.classList.remove('show');
+
+    pb.textContent = '一時停止';
+    pb.classList.remove('bt6-c');
+    pb.classList.add('bt6-p');
+
+    pf.style.width = '0%';
+
+    qb.classList.remove('enabled');
+    qb.style.display = '';
+    qb.style.transition = 'none';
+    qb.style.left = '110%';
+    void qb.offsetWidth;
+    qb.style.transition = 'left 1.5s cubic-bezier(.2,.8,.2,1)';
+
+    aa('running');
+
+    c1.style.animation = 'none';
+    c1.style.left = '120%';
+    void c1.offsetWidth;
+
+    sx = 60;
+    sl.style.left = '60px';
+    sl.style.opacity = '1';
+
+    clearInterval(smT);
+    smT = setInterval(()=>{
+      if(!alive || paused) return;
+      sx -= 2;
+      if(sx < -20){
+        sl.style.opacity = '0';
+        clearInterval(smT);
+        return;
+      }
+      sl.style.left = sx + 'px';
+    },16);
+
+    clearCactusTimers();
+    scheduleCactus(CACTUS_START);
+
+    clearInterval(sT);
+    clearInterval(cT);
+
+    sT = setInterval(()=>{
+      if(alive && !paused) us(score + 1);
+    },100);
+
+    cT = setInterval(chk,30);
+  }
+
+  function jump(){
+    if(pl.classList.contains('jumping') || crouching || paused || !alive) return;
+    pl.classList.add('jumping');
+    pl.addEventListener('animationend',()=>{
+      pl.classList.remove('jumping');
+    }, { once:true });
+  }
+
+  function crouch(on){
+    if(paused || !alive) return;
+    crouching = on;
+    pl.classList.toggle('crouching', on);
+  }
+
+  function chk(){
+    if(!alive || paused || phase !== 'normal' || !c1a) return;
+    const pr = pl.getBoundingClientRect();
+    const cr = c1.getBoundingClientRect();
+
+    if(
+      pr.right - 10 > cr.left + 4 &&
+      pr.left + 6 < cr.right - 4 &&
+      pr.bottom - 4 > cr.top + 6
+    ){
+      go();
+    }
+  }
+
+  function go(){
+    alive = false;
+    clearInterval(sT);
+    clearInterval(cT);
+    clearInterval(smT);
+    clearCactusTimers();
+    aa('paused');
+    pl.classList.remove('paused');
+
+    setTimeout(()=>{
+      ov.classList.add('show');
+    },200);
+  }
+
+  function tp(){
+    if(cleared) return;
+    if(!paused && !alive) return;
+
+    if(!paused){
+      paused = true;
+      aa('paused');
+      pl.classList.add('paused');
+      po.classList.add('show');
+
+      pb.textContent = '退会を中止する';
+      pb.classList.remove('bt6-p');
+      pb.classList.add('bt6-c');
+    }else{
+      paused = false;
+      aa('running');
+      pl.classList.remove('paused');
+      po.classList.remove('show');
+
+      pb.textContent = '一時停止';
+      pb.classList.remove('bt6-c');
+      pb.classList.add('bt6-p');
+    }
+  }
+
+  pb.addEventListener('click',()=>{
+    if(paused){
+      doCancelQuit();
+    }else{
+      tp();
+    }
+  });
+
+  function rs(){
+    ov.classList.remove('show');
+    sg();
+  }
+
+  sb.addEventListener('click',sg);
+
+  document.addEventListener('keydown',e=>{
+    if(!started) return;
+
+    if(e.code === 'Space' || e.code === 'ArrowUp'){
+      e.preventDefault();
+      if(!alive && !cleared && !cl.classList.contains('show')){
+        rs();
+      }else{
+        jump();
+      }
+    }
+
+    if(e.code === 'ArrowDown'){
+      e.preventDefault();
+      if(alive) crouch(true);
+    }
+
+    if(e.code === 'Escape'){
+      e.preventDefault();
+      tp();
+    }
+  });
+
+  document.addEventListener('keyup',e=>{
+    if(e.code === 'ArrowDown'){
+      e.preventDefault();
+      crouch(false);
+    }
+  });
+
+  gm.addEventListener('mousedown',e=>{
+    if(!started) return;
+    if(paused || cl.classList.contains('show')) return;
+    e.preventDefault();
+
+    if(!alive && !cleared){
+      rs();
+    }else{
+      jump();
+    }
+  });
+})();
+</script>
 {% endblock %}
