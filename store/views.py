@@ -14,6 +14,7 @@ import random
 from django.db.models import Avg
 from .forms import ReviewForm
 
+
 def main(request):
     from django.db.models import Avg, Count, Min, Max
     items = Item.objects.annotate(
@@ -184,18 +185,19 @@ def checkoutCommit(request):
     cart_items = ItemsInCart.objects.filter(user=user)
     if not cart_items: return redirect('store:cart')
 
-    total_price = sum(c.item.price * c.amount for c in cart_items)
+    original_total = sum(c.item.price * c.amount for c in cart_items)
+    total_price = original_total
 
     # クーポンを適用
+    coupon = None
     if coupon_id:
         coupon = get_object_or_404(Coupon, id=coupon_id, user=user)
         if coupon.coupon_type == '20%':
-            total_price *= 0.8
+            total_price = int(total_price * 0.8)
         elif coupon.coupon_type == '50%':
-            total_price *= 0.5
+            total_price = int(total_price * 0.5)
         elif coupon.coupon_type == '99%':
-            total_price *= 0.01
-        total_price = int(total_price)  # 小数点以下を切り捨て
+            total_price = int(total_price * 0.01)
 
     # 決済APIにリクエスト
     api_base_url = os.environ.get('API_BASE_URL', 'http://15.152.44.182/api/v1')
@@ -229,10 +231,12 @@ def checkoutCommit(request):
         error_message = '決済に失敗しました。カード情報を確認して再度お試しください。'
         if payment_data.get('error'):
             error_message += f"（{payment_data['error'].get('message', '')}）"
+        coupons = Coupon.objects.filter(user=user)
         context = {
             'user': user,
             'cart_items': cart_items,
-            'total_price': total_price,
+            'total_price': original_total,
+            'coupons': coupons,
             'error_message': error_message,
         }
         return render(request, 'store/checkout.html', context)
@@ -244,6 +248,10 @@ def checkoutCommit(request):
                 return redirect('store:cart')
         max_p = Purchase.objects.aggregate(Max('purchase_id'))['purchase_id__max']
         next_p_id = (max_p or 0) + 1
+
+        # クーポン適用があれば割引後金額を、なければ None を保存
+        discounted_total = total_price if coupon_id else None
+
         purchase = Purchase.objects.create(
             purchase_id=next_p_id,
             destination=destination,
@@ -251,6 +259,7 @@ def checkoutCommit(request):
             transaction_id=payment_data.get('transaction_id', ''),
             payment_status=payment_data.get('status', 'unknown'),
             card_last4=payment_data.get('card_last4', ''),
+            discounted_total=discounted_total,
         )
         max_pd = PurchaseDetail.objects.aggregate(Max('purchase_detail_id'))['purchase_detail_id__max']
         next_pd_id = (max_pd or 0) + 1
@@ -262,7 +271,7 @@ def checkoutCommit(request):
         cart_items.delete()
 
         # 適用したクーポンを削除
-        if coupon_id:
+        if coupon:
             coupon.delete()
 
     return render(request, 'store/purchaseComplete.html', {'purchase': purchase})
@@ -366,7 +375,9 @@ def adminPurchaseList(request):
     purchase_data = []
     for p in purchases:
         details = PurchaseDetail.objects.filter(purchase=p)
-        total_price = sum(d.item.price * d.amount for d in details)
+        subtotal = sum(d.item.price * d.amount for d in details)
+        # discounted_total が保存されていればそちらを、なければ小計をそのまま使う
+        total_price = p.discounted_total if p.discounted_total is not None else subtotal
         purchase_data.append({
             'purchase': p,
             'details': details,
@@ -414,12 +425,13 @@ def coupon_view(request):
     existing_coupons = Coupon.objects.filter(user=user)
 
     if existing_coupons.count() >= 3:
-        return render(request, 'store/coupon.html', {'message': 'You already have 3 coupons!'})
+        return render(request, 'store/coupon.html', {'message': 'You already have 3 coupons!', 'already_max': True})
 
     coupon_type = random.choice(['20%', '50%', '99%'])
     Coupon.objects.create(user=user, coupon_type=coupon_type)
 
-    return render(request, 'store/coupon.html', {'message': f'You received a {coupon_type} coupon!'})
+    return render(request, 'store/coupon.html', {'coupon_type': coupon_type})
+
 # チャットボット
 def itemChat(request, item_id):
     if request.method != 'POST':

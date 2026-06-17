@@ -52,6 +52,9 @@ class Purchase(models.Model):
     transaction_id = models.CharField(max_length=64, blank=True, null=True)
     payment_status = models.CharField(max_length=16, default='pending')
     card_last4 = models.CharField(max_length=4, blank=True, null=True)
+
+    # クーポン適用後の実際の支払い金額（None の場合は割引なし = 通常合計）
+    discounted_total = models.IntegerField(null=True, blank=True)
     
     # 外部キー制約 (DB上は user_id)
     user = models.ForeignKey('accounts.User', on_delete=models.CASCADE)
@@ -115,3 +118,4 @@ class Review(models.Model):
     @property
     def stars(self):
         return "★" * self.rating + "☆" * (5 - self.rating)
+
