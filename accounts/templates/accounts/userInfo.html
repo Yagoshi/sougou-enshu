@@ -1,61 +1,95 @@
-{% extends 'store/base.html' %}
 {% load static %}
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <title>会員情報確認</title>
+    <link rel='stylesheet' type='text/css' href='{% static "accounts/css/style.css" %}' />
+    <style>
+        .original-price {
+            text-decoration: line-through;
+            color: #888;
+            font-size: 0.9em;
+            margin-right: 4px;
+        }
+        .discount-label {
+            display: inline-block;
+            background: #e00;
+            color: #fff;
+            border-radius: 3px;
+            padding: 1px 5px;
+            font-size: 0.8em;
+            margin-right: 4px;
+            vertical-align: middle;
+        }
+    </style>
+</head>
+<body>
+    <h1>会員情報確認</h1>
 
-{% block title %}マイページ | SOUGOU STORE{% endblock %}
+    <table class="center">
+        <tr>
+            <th>会員ID</th>
+            <td>{{ user.user_id }}</td>
+        </tr>
+        <tr>
+            <th>お名前</th>
+            <td>{{ user.name }}</td>
+        </tr>
+        <tr>
+            <th>ご住所</th>
+            <td>{{ user.address }}</td>
+        </tr>
+    </table>
 
-{% block content %}
-<div class="section" style="max-width: 680px; margin: 0 auto;">
-    <div class="section-header">
-        <span class="section-title">マイページ</span>
-    </div>
+    <ul>
+        <li><a href="{% url 'accounts:updateUser' %}">会員情報を変更する</a></li>
+        <li><a href="{% url 'accounts:withdrawConfirm' %}">退会手続きはこちら</a></li>
+    </ul>
 
-    <div class="confirm-card" style="margin-bottom:24px;">
-        <div class="confirm-row"><span class="confirm-label">会員ID</span><span class="confirm-value">{{ user.user_id }}</span></div>
-        <div class="confirm-row"><span class="confirm-label">お名前</span><span class="confirm-value">{{ user.name }}</span></div>
-        <div class="confirm-row"><span class="confirm-label">ご住所</span><span class="confirm-value">{{ user.address }}</span></div>
-    </div>
-
-    <div style="display:flex; gap:10px; margin-bottom:36px;">
-        <a href="{% url 'accounts:updateUser' %}"><button class="btn-ghost">会員情報を変更する</button></a>
-        <a href="{% url 'accounts:withdrawConfirm' %}"><button class="btn-danger" style="padding:10px 20px; font-size:12px;">退会手続き</button></a>
-    </div>
-
-    <div class="section-header">
-        <span class="section-title">購入履歴</span>
-    </div>
-
+    <h2>購入履歴</h2>
     {% if purchase_history %}
         {% for history in purchase_history %}
-        <div class="purchase-card" style="margin-bottom:16px;">
-            <div class="purchase-card-header">
-                <span style="font-size:13px; font-weight:500;">{{ history.purchase.booked_date|date:"Y年m月d日 H:i" }}</span>
-                <span style="font-size:13px; font-weight:700; color:var(--ac);">¥{{ history.total_price }}</span>
-            </div>
-            <div style="font-size:12px; color:var(--text3); margin-bottom:10px;">配送先：{{ history.purchase.destination }}</div>
-            <table class="data-table">
-                <thead>
-                    <tr>
-                        <th>商品名</th>
-                        <th style="text-align:center;">数量</th>
-                        <th style="text-align:right;">小計</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for detail in history.details %}
+            <h3>注文日時: {{ history.purchase.booked_date|date:"Y年m月d日 H:i" }}</h3>
+
+            <table class="center">
+                <tr>
+                    <th>配送先</th>
+                    <td>{{ history.purchase.destination }}</td>
+                </tr>
+                <tr>
+                    <th>お支払い合計金額</th>
+                    <td class="text-danger">
+                        {% if history.has_discount %}
+                            <span class="original-price">{{ history.subtotal }}円</span>
+                            <span class="discount-label">クーポン適用</span>
+                            {{ history.total_price }}円
+                        {% else %}
+                            {{ history.total_price }}円
+                        {% endif %}
+                    </td>
+                </tr>
+            </table>
+
+            <table class="center">
+                <tr>
+                    <th>商品名</th>
+                    <th>数量</th>
+                    <th>小計</th>
+                </tr>
+                {% for detail in history.details %}
                     <tr>
                         <td>{{ detail.item.name }}</td>
-                        <td style="text-align:center;">{{ detail.amount }}個</td>
-                        <td style="text-align:right;">¥{% widthratio detail.item.price 1 detail.amount %}</td>
+                        <td>{{ detail.amount }}個</td>
+                        <td>{% widthratio detail.item.price 1 detail.amount %}円</td>
                     </tr>
-                    {% endfor %}
-                </tbody>
+                {% endfor %}
             </table>
-        </div>
         {% endfor %}
     {% else %}
-        <p style="color:var(--text3); font-size:13px;">購入履歴はありません。</p>
+        <p class="text-muted">購入履歴はありません。</p>
     {% endif %}
 
-    <a href="{% url 'store:main' %}" style="font-size:12px; color:var(--ac); display:block; margin-top:16px;">← トップページに戻る</a>
-</div>
-{% endblock %}
+    <a href="{% url 'store:main' %}" class="back-link">← トップページに戻る</a>
+</body>
+</html>
