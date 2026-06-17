@@ -1,3 +1,11 @@
+{% extends 'store/base.html' %}
+{% load static %}
+
+{% block title %}カート | SOUGOU STORE{% endblock %}
+
+{% block content %}
+<div class="section">
+<!-- 
 {% load static %}
 <!DOCTYPE html>
 <html lang="ja">
@@ -32,7 +40,7 @@
         #price-display { transition: all 0.2s; }
     </style>
 </head>
-<body>
+<body> -->
     <h1>購入確認</h1>
 
     <h2>ご注文内容</h2>
@@ -134,5 +142,7 @@
             }
         });
     </script>
-</body>
-</html>
+</div>
+{% endblock %}
+<!-- </body>
+</html> -->
