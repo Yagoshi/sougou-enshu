@@ -94,11 +94,29 @@
             <!-- クレジットカード -->
             <div id="card-area">
                 <input type="text" name="card_number"
-                    value="4242424242424242"
-                    maxlength="16"
-                    required
-                    style="width:100%; padding:8px; border:1px solid var(--border2); border-radius:var(--radius);">
-
+                       value="4242424242424242"
+                       maxlength="16"
+                       required
+                       placeholder="カード番号"
+                       style="width:100%; padding:8px; border:1px solid var(--border2); border-radius:var(--radius); margin-bottom:8px;">
+            
+                <input type="text" name="card_name"
+                       placeholder="カード名義（例：TARO YAMADA）"
+                       style="width:100%; padding:8px; border:1px solid var(--border2); border-radius:var(--radius); margin-bottom:8px;">
+            
+                <!-- 有効期限 -->
+                <div style="display:flex; gap:8px; margin-bottom:8px;">
+                    <input type="text" placeholder="MM"
+                           style="flex:1; padding:8px; border:1px solid var(--border2); border-radius:var(--radius);">
+                    <input type="text" placeholder="YY"
+                           style="flex:1; padding:8px; border:1px solid var(--border2); border-radius:var(--radius);">
+                </div>
+            
+                <input type="text" name="cvc"
+                       maxlength="4"
+                       placeholder="セキュリティコード"
+                       style="width:100%; padding:8px; border:1px solid var(--border2); border-radius:var(--radius);">
+            
                 <p style="font-size:11px; color:var(--text3); margin-top:6px;">
                     ※テスト用カード番号: 4242...（成功） / 4000...（失敗）
                 </p>
