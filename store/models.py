@@ -1,4 +1,5 @@
 from django.db import models
+from django.core.validators import MinValueValidator, MaxValueValidator
 
 class Category(models.Model):
     # int, PK, INDEX, 自動採番なし
@@ -70,3 +71,47 @@ class PurchaseDetail(models.Model):
 
     class Meta:
         db_table = 'shopping_purchasedetail'
+
+class Review(models.Model):
+    review_id = models.AutoField(primary_key=True, db_index=True)
+
+    rating = models.IntegerField(
+        validators=[
+            MinValueValidator(1),
+            MaxValueValidator(5)
+        ]
+    )
+
+    title = models.CharField(max_length=128)
+    comment = models.TextField()
+
+    helpful_count = models.IntegerField(default=0)
+
+    is_verified_purchase = models.BooleanField(default=False)
+
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    item = models.ForeignKey(
+        Item,
+        on_delete=models.CASCADE,
+        related_name="reviews"
+    )
+
+    user = models.ForeignKey(
+        'accounts.User',
+        on_delete=models.CASCADE,
+        related_name="reviews"
+    )
+
+    class Meta:
+        db_table = 'shopping_review'
+        unique_together = ('item', 'user')
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f"{self.item.name} - {self.rating}点"
+
+    @property
+    def stars(self):
+        return "★" * self.rating + "☆" * (5 - self.rating)
