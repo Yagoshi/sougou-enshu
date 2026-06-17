@@ -1,4 +1,12 @@
+{% extends 'store/base.html' %}
 {% load static %}
+
+{% block title %}カート | SOUGOU STORE{% endblock %}
+
+{% block content %}
+<div class="section">
+
+<!-- {% load static %}
 <!DOCTYPE html>
 <html lang="ja">
 <head>
@@ -22,9 +30,9 @@
             margin-right: 4px;
             vertical-align: middle;
         }
-    </style>
-</head>
-<body>
+    </style> -->
+<!-- </head> -->
+<!-- <body> -->
     <h1>会員情報確認</h1>
 
     <table class="center">
@@ -91,5 +99,7 @@
     {% endif %}
 
     <a href="{% url 'store:main' %}" class="back-link">← トップページに戻る</a>
-</body>
-</html>
+</div>
+{% endblock %}
+<!-- </body>
+</html> -->
