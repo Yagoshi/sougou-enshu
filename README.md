@@ -148,7 +148,33 @@ python manage.py seed --clear
 
 > ⚠️ Gemini APIキーは各自で取得してください。キーがない場合、商品詳細のチャットボットが動作しません。
 
-### 9. 開発サーバーを起動する
+### 9. 商品画像ファイルを取得する
+
+商品画像は `media/` フォルダに保存されていますが、Gitの管理対象外のため別途共有が必要です。
+
+**画像ファイルを受け取った場合（zipファイル）**
+
+受け取った `media_items.zip` を `sougou-enshu/` フォルダに置いて解凍してください。
+
+```bash
+cd sougou-enshu
+unzip media_items.zip
+```
+
+解凍後、`media/items/` フォルダに画像ファイルが入っていれば完了です。
+
+> ⚠️ 画像ファイルがない場合でも動作はしますが、商品画像が表示されません。
+
+**画像ファイルを共有する場合（配布する側）**
+
+```bash
+cd sougou-enshu
+zip -r media_items.zip media/items/
+```
+
+作成した `media_items.zip` を班員に共有してください。
+
+### 10. 開発サーバーを起動する
 
 ```bash
 python manage.py runserver
