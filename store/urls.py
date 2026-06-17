@@ -27,4 +27,5 @@ urlpatterns = [
     path('admin_main/purchase/cancel/<int:purchase_id>/', views.adminPurchaseCancel, name='adminPurchaseCancel'),
 
     path('items/<int:item_id>/chat/', views.itemChat, name='itemChat'),
+    path("item/<int:item_id>/review/", views.add_review, name="add_review"),
 ]

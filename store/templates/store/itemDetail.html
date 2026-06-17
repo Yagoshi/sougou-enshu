@@ -99,6 +99,120 @@
         </form>
     </div>
 
+    <hr>
+
+    <section class="review-section">
+        <h2>カスタマーレビュー</h2>
+    
+        <div class="review-summary">
+            <div class="average-rating">
+                ★ {{ avg_rating }} / 5
+            </div>
+    
+            <p>{{ review_count }}件のレビュー</p>
+    
+            <div class="rating-distribution">
+                {% for row in rating_distribution %}
+                    <div class="rating-row">
+                        <span>星{{ row.star }}</span>
+    
+                        <div class="rating-bar">
+                            <div class="rating-bar-fill" style="width: {{ row.percent }}%;"></div>
+                        </div>
+    
+                        <span>{{ row.percent }}%</span>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+    
+        <hr>
+    
+        <div class="review-form-area">
+            <h3>この商品をレビューする</h3>
+    
+            {% if login_user_id %}
+                <form method="post" action="{% url 'store:add_review' item.item_id %}">
+                    {% csrf_token %}
+    
+                    <div class="form-group">
+                        {{ form.rating.label_tag }}
+                        {{ form.rating }}
+                    </div>
+    
+                    <div class="form-group">
+                        {{ form.title.label_tag }}
+                        {{ form.title }}
+                    </div>
+    
+                    <div class="form-group">
+                        {{ form.comment.label_tag }}
+                        {{ form.comment }}
+                    </div>
+    
+                    <button type="submit" class="review-submit-btn">
+                        レビューを投稿する
+                    </button>
+                </form>
+            {% else %}
+                <p>レビューを投稿するにはログインしてください。</p>
+            {% endif %}
+        </div>
+    
+        <hr>
+    
+        <div class="review-list">
+            <h3>レビュー一覧</h3>
+        
+            {% for review in reviews %}
+                <div class="review-card">
+        
+                    {% if login_user_id %}
+                        <!-- ログイン済み：レビュー内容をすべて表示 -->
+                        <p class="review-user">
+                            {{ review.user.name }}
+                        </p>
+        
+                        <p class="review-stars">
+                            {{ review.stars }}
+                        </p>
+        
+                        {% if review.is_verified_purchase %}
+                            <p class="verified-purchase">
+                                購入済み
+                            </p>
+                        {% endif %}
+        
+                        <h4 class="review-title">
+                            {{ review.title }}
+                        </h4>
+        
+                        <p class="review-comment">
+                            {{ review.comment }}
+                        </p>
+        
+                        <p class="review-date">
+                            {{ review.created_at|date:"Y年m月d日" }}
+                        </p>
+        
+                        <p class="helpful">
+                            役に立った数：{{ review.helpful_count }}
+                        </p>
+        
+                    {% else %}
+                        <!-- 未ログイン：星評価だけ表示 -->
+                        <p class="review-stars">
+                            {{ review.stars }}
+                        </p>
+                    {% endif %}
+        
+                </div>
+            {% empty %}
+                <p>まだレビューはありません。</p>
+            {% endfor %}
+        </div>
+    </section>
+
     <a href="{% url 'store:main' %}" class="back-link">← 商品一覧に戻る</a>
 </body>
 </html>

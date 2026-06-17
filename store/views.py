@@ -5,9 +5,11 @@ import google.generativeai as genai
 from django.shortcuts import render, get_object_or_404, redirect
 from django.db.models import Max
 from django.db import transaction
-from .models import Item, Category, ItemsInCart, Purchase, PurchaseDetail
+from .models import Item, Category, ItemsInCart, Purchase, PurchaseDetail, Review
 from accounts.models import User
 from .forms import ItemForm
+from django.db.models import Avg
+from .forms import ReviewForm
 
 def main(request):
     items = Item.objects.all()
@@ -28,7 +30,47 @@ def searchResult(request):
 
 def itemDetail(request, item_id):
     item = get_object_or_404(Item, item_id=item_id)
-    return render(request, 'store/itemDetail.html', {'item': item})
+
+    reviews = Review.objects.filter(item=item).select_related("user")
+
+    review_count = reviews.count()
+
+    avg_rating = reviews.aggregate(
+        avg=Avg("rating")
+    )["avg"]
+
+    if avg_rating is None:
+        avg_rating = 0
+
+    rating_distribution = []
+
+    for star in range(5, 0, -1):
+        count = reviews.filter(rating=star).count()
+
+        if review_count > 0:
+            percent = round((count / review_count) * 100)
+        else:
+            percent = 0
+
+        rating_distribution.append({
+            "star": star,
+            "count": count,
+            "percent": percent,
+        })
+
+    form = ReviewForm()
+
+    context = {
+        "item": item,
+        "reviews": reviews,
+        "review_count": review_count,
+        "avg_rating": round(avg_rating, 1),
+        "rating_distribution": rating_distribution,
+        "form": form,
+        "login_user_id": request.session.get("login_user_id"),
+    }
+
+    return render(request, "store/itemDetail.html", context)
 
 def cart(request):
     user_id = request.session.get('login_user_id')
@@ -330,8 +372,8 @@ def itemChat(request, item_id):
     try:
         response = model.generate_content(f"{system_prompt}\n\nお客様の質問: {user_message}")
         bot_reply = response.text
-    except Exception as e:
-        bot_reply = f'エラー: {str(e)}'
+    except Exception:
+        bot_reply = '申し訳ありません。現在チャットボットが利用できません。'
 
     # セッションにチャット履歴を保存
     chat_history = request.session.get('chat_history', {})
@@ -344,3 +386,36 @@ def itemChat(request, item_id):
     request.session['chat_history'] = chat_history
 
     return redirect('store:itemDetail', item_id=item_id)
+
+
+def add_review(request, item_id):
+    login_user_id = request.session.get("login_user_id")
+
+    if not login_user_id:
+        return redirect("accounts:login")
+
+    item = get_object_or_404(Item, item_id=item_id)
+    user = get_object_or_404(User, user_id=login_user_id)
+
+    if request.method == "POST":
+        form = ReviewForm(request.POST)
+
+        if form.is_valid():
+            has_purchase = PurchaseDetail.objects.filter(
+                item=item,
+                purchase__user=user,
+                purchase__cancel=False
+            ).exists()
+
+            Review.objects.update_or_create(
+                item=item,
+                user=user,
+                defaults={
+                    "rating": int(form.cleaned_data["rating"]),
+                    "title": form.cleaned_data["title"],
+                    "comment": form.cleaned_data["comment"],
+                    "is_verified_purchase": has_purchase,
+                }
+            )
+
+    return redirect("store:itemDetail", item_id=item.item_id)
