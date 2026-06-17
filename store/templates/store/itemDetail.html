@@ -6,6 +6,41 @@
     <title>{{ item.name }} の詳細</title>
     <link rel='stylesheet' type='text/css' href='{% static "accounts/css/style.css" %}' />
 </head>
+<!-- チャットボット -->
+<div class="chat-container" style="max-width: 600px; margin: 40px auto;">
+    <h3>商品についての質問</h3>
+
+    <!-- チャット履歴の表示 -->
+    <div class="chat-history" style="border: 1px solid #ddd; padding: 16px; border-radius: 8px; margin-bottom: 16px; min-height: 100px; background: #fafafa;">
+        {% with item_key=item.item_id|stringformat:"s" %}
+        {% with histories=request.session.chat_history %}
+        {% if histories %}
+            {% for key, chats in histories.items %}
+                {% if key == item_key %}
+                    {% for c in chats %}
+                    <div style="margin-bottom: 12px;">
+                        <p style="background: #e8f4fd; padding: 8px 12px; border-radius: 8px; display: inline-block;">🙋 {{ c.user }}</p><br>
+                        <p style="background: #fff; border: 1px solid #ddd; padding: 8px 12px; border-radius: 8px; display: inline-block;">🤖 {{ c.bot }}</p>
+                    </div>
+                    {% endfor %}
+                {% endif %}
+            {% endfor %}
+        {% else %}
+            <p style="color: #999;">質問を入力してください。</p>
+        {% endif %}
+        {% endwith %}
+        {% endwith %}
+    </div>
+
+    <!-- 質問フォーム -->
+    <form method="POST" action="{% url 'store:itemChat' item.item_id %}">
+        {% csrf_token %}
+        <div style="display: flex; gap: 8px;">
+            <input type="text" name="message" placeholder="例：この商品はどんな素材ですか？" style="flex: 1; padding: 8px 12px; border: 1px solid #ddd; border-radius: 4px;">
+            <button type="submit" style="padding: 8px 16px; background: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer;">送信</button>
+        </div>
+    </form>
+</div>
 <body>
     <h1>商品詳細</h1>
 

@@ -1,5 +1,7 @@
 import os
+import json
 import requests
+import google.generativeai as genai
 from django.shortcuts import render, get_object_or_404, redirect
 from django.db.models import Max, Avg, Count
 from django.db import transaction
@@ -353,6 +355,7 @@ def adminPurchaseCancel(request, purchase_id):
 
     return redirect('store:adminPurchaseList')
 
+<<<<<<< HEAD
 def add_review(request, item_id):
     login_user_id = request.session.get("login_user_id")
 
@@ -384,3 +387,55 @@ def add_review(request, item_id):
             )
 
     return redirect("store:itemDetail", item_id=item.item_id)
+=======
+# チャットボット
+def itemChat(request, item_id):
+    if request.method != 'POST':
+        return redirect('store:itemDetail', item_id=item_id)
+
+    item = get_object_or_404(Item, item_id=item_id)
+    user_message = request.POST.get('message', '').strip()
+
+    if not user_message:
+        return redirect('store:itemDetail', item_id=item_id)
+
+    # Gemini APIの設定
+    api_key = os.environ.get('GEMINI_API_KEY', '')
+    genai.configure(api_key=api_key)
+    model = genai.GenerativeModel('models/gemini-2.5-flash')
+
+    # 商品情報をシステムプロンプトに含める
+    system_prompt = f"""
+あなたは「{item.name}」という商品を販売するECサイトのサポートスタッフです。
+以下の商品情報をもとに、お客様の質問に日本語で丁寧に答えてください。
+
+【商品情報】
+- 商品名: {item.name}
+- メーカー: {item.manufacturer}
+- 色: {item.color}
+- 価格: {item.price}円
+- 在庫数: {item.stock}個
+- カテゴリ: {item.category.name}
+
+商品情報に含まれていない質問には「詳細はお問い合わせください」と答えてください。
+回答は2〜3文程度で簡潔にまとめてください。
+"""
+
+    try:
+        response = model.generate_content(f"{system_prompt}\n\nお客様の質問: {user_message}")
+        bot_reply = response.text
+    except Exception as e:
+        bot_reply = f'エラー: {str(e)}'
+
+    # セッションにチャット履歴を保存
+    chat_history = request.session.get('chat_history', {})
+    if str(item_id) not in chat_history:
+        chat_history[str(item_id)] = []
+    chat_history[str(item_id)].append({
+        'user': user_message,
+        'bot': bot_reply,
+    })
+    request.session['chat_history'] = chat_history
+
+    return redirect('store:itemDetail', item_id=item_id)
+>>>>>>> b9914bf51dfc47a1433c58bc89ae5fb6c1df3e96
