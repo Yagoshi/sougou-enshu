@@ -168,11 +168,12 @@ def adminLogin(request):
         input_admin_id = request.POST.get('admin_id')
         input_password = request.POST.get('password')
         try:
-            # データベースから管理者を検索
-            admin = Admin.objects.get(admin_id=input_admin_id, password=input_password)
-            # 成功したら管理者用セッションを発行
-            request.session['admin_login_id'] = admin.admin_id
-            return redirect('store:adminMain')
+            admin = Admin.objects.get(admin_id=input_admin_id)
+            if check_password(input_password, admin.password):
+                request.session['admin_login_id'] = admin.admin_id
+                return redirect('store:adminMain')
+            else:
+                error_message = '管理者IDまたはパスワードが間違っています。'
         except Admin.DoesNotExist:
             error_message = '管理者IDまたはパスワードが間違っています。'
             
