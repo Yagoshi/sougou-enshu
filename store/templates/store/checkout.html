@@ -1,148 +1,146 @@
 {% extends 'store/base.html' %}
 {% load static %}
 
-{% block title %}カート | SOUGOU STORE{% endblock %}
+{% block title %}購入確認 | SOUGOU STORE{% endblock %}
 
 {% block content %}
 <div class="section">
-<!-- 
-{% load static %}
-<!DOCTYPE html>
-<html lang="ja">
-<head>
-    <meta charset="UTF-8">
-    <title>購入確認</title>
-    <link rel='stylesheet' type='text/css' href='{% static "accounts/css/style.css" %}' />
-    <style>
-        .price-summary {
-            margin: 8px 0;
-        }
-        .original-price {
-            text-decoration: line-through;
-            color: #888;
-            font-size: 0.95em;
-        }
-        .discounted-price {
-            color: #e00;
-            font-weight: bold;
-            font-size: 1.1em;
-        }
-        .discount-badge {
-            display: inline-block;
-            background: #e00;
-            color: #fff;
-            border-radius: 4px;
-            padding: 1px 6px;
-            font-size: 0.85em;
-            margin-left: 6px;
-            vertical-align: middle;
-        }
-        #price-display { transition: all 0.2s; }
-    </style>
-</head>
-<body> -->
-    <h1>購入確認</h1>
 
-    <h2>ご注文内容</h2>
-    <table class="center">
-        <tr>
-            <th>商品名</th>
-            <th>数量</th>
-            <th>小計</th>
-        </tr>
-        {% for cart_item in cart_items %}
+    <!-- タイトル -->
+    <div class="section-header">
+        <span class="section-title">CHECKOUT</span>
+    </div>
+
+    <!-- 注文内容 -->
+    <div style="background: var(--bg2); padding: 20px; border-radius: var(--radius-lg); margin-bottom: 20px;">
+
+        <h2 style="font-size: 14px; margin-bottom: 12px;">ご注文内容</h2>
+
+        <table style="width: 100%; font-size: 12px;">
             <tr>
-                <td>{{ cart_item.item.name }}</td>
-                <td>{{ cart_item.amount }}個</td>
-                <td>{% widthratio cart_item.item.price 1 cart_item.amount %}円</td>
+                <th style="text-align:left; padding:6px;">商品名</th>
+                <th style="padding:6px;">数量</th>
+                <th style="text-align:right; padding:6px;">小計</th>
             </tr>
-        {% endfor %}
-        <tr>
-            <th>お支払い合計</th>
-            <td colspan="2">
-                <div id="price-display" class="price-summary">
-                    <span class="text-danger" id="final-price">{{ total_price }}円</span>
-                </div>
-            </td>
-        </tr>
-    </table>
 
+            {% for cart_item in cart_items %}
+            <tr>
+                <td style="padding:6px;">{{ cart_item.item.name }}</td>
+                <td style="text-align:center;">{{ cart_item.amount }}個</td>
+                <td style="text-align:right;">
+                    {% widthratio cart_item.item.price 1 cart_item.amount %}円
+                </td>
+            </tr>
+            {% endfor %}
+        </table>
+
+        <!-- 合計 -->
+        <div id="price-display" style="margin-top:15px; text-align:right;">
+            <span style="color: var(--ac); font-size: 16px; font-weight: bold;" id="final-price">
+                {{ total_price }}円
+            </span>
+        </div>
+    </div>
+
+    <!-- フォーム開始 -->
     <form action="{% url 'store:checkoutCommit' %}" method="POST">
         {% csrf_token %}
 
-        <h2>クーポンを選択</h2>
-        <table class="center">
-            <tr>
-                <th>クーポン</th>
-                <td>
-                    <select name="coupon_id" id="coupon-select">
-                        <option value="" data-discount="0">クーポンを使用しない</option>
-                        {% for coupon in coupons %}
-                            <option value="{{ coupon.id }}" data-type="{{ coupon.coupon_type }}">{{ coupon.coupon_type }}</option>
-                        {% endfor %}
-                    </select>
-                </td>
-            </tr>
-        </table>
+        <!-- クーポン -->
+        <div style="background: var(--bg2); padding: 20px; border-radius: var(--radius-lg); margin-bottom: 20px;">
+            <h2 style="font-size: 14px; margin-bottom: 10px;">クーポン</h2>
 
-        <h2>配送先住所</h2>
-        <table class="center">
-            <tr>
-                <th>お届け先</th>
-                <td>
-                    <input type="text" name="destination" value="{{ user.address }}" style="width: 300px;" required><br>
-                    <span class="text-muted">※登録住所以外に発送する場合は変更してください。</span>
-                </td>
-            </tr>
-        </table>
+            <select name="coupon_id" id="coupon-select"
+                    style="width:100%; padding:8px; border:1px solid var(--border2); border-radius:var(--radius); background:var(--bg);">
 
+                <option value="" data-discount="0">クーポンを使用しない</option>
+
+                {% for coupon in coupons %}
+                    <option value="{{ coupon.id }}" data-type="{{ coupon.coupon_type }}">
+                        {{ coupon.coupon_type }}
+                    </option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <!-- 配送先 -->
+        <div style="background: var(--bg2); padding: 20px; border-radius: var(--radius-lg); margin-bottom: 20px;">
+            <h2 style="font-size: 14px; margin-bottom: 10px;">配送先住所</h2>
+
+            <input type="text" name="destination"
+                   value="{{ user.address }}"
+                   required
+                   style="width:100%; padding:8px; border:1px solid var(--border2); border-radius:var(--radius);">
+
+            <p style="font-size:11px; color:var(--text3); margin-top:6px;">
+                ※登録住所以外に発送する場合は変更してください。
+            </p>
+        </div>
+
+        <!-- 支払い -->
+        <div style="background: var(--bg2); padding: 20px; border-radius: var(--radius-lg); margin-bottom: 20px;">
+            <h2 style="font-size: 14px; margin-bottom: 10px;">クレジットカード</h2>
+
+            <input type="text" name="card_number"
+                   value="4242424242424242"
+                   maxlength="16"
+                   required
+                   style="width:100%; padding:8px; border:1px solid var(--border2); border-radius:var(--radius);">
+
+            <p style="font-size:11px; color:var(--text3); margin-top:6px;">
+                ※テスト用カード番号: 4242...（成功） / 4000...（失敗）
+            </p>
+        </div>
+
+        <!-- エラー -->
         {% if error_message %}
-            <p class="text-danger">{{ error_message }}</p>
+        <p style="color:#e00; margin-bottom:10px;">{{ error_message }}</p>
         {% endif %}
 
-        <h2>お支払い方法（クレジットカード）</h2>
-        <table class="center">
-            <tr>
-                <th>カード番号</th>
-                <td><input type="text" name="card_number" value="4242424242424242" maxlength="16" required></td>
-            </tr>
-        </table>
-        <p class="text-muted">※テスト用カード番号: 4242424242424242（成功） / 4000000000000000（失敗）</p>
+        <!-- ボタン -->
+        <button type="submit" class="btn-primary" style="width:100%; padding:12px;">
+            注文を確定する
+        </button>
 
-        <button type="submit" class="btn btn-success btn-block">注文を確定する</button>
     </form>
 
-    <a href="{% url 'store:cart' %}" class="back-link">← カートに戻る</a>
+    <!-- 戻る -->
+    <div style="margin-top:15px;">
+        <a href="{% url 'store:cart' %}" class="btn-ghost" style="padding:6px 12px;">
+            ← カートに戻る
+        </a>
+    </div>
 
-    <script>
-        const originalTotal = {{ total_price }};
-
-        function calcDiscounted(originalTotal, couponType) {
-            if (couponType === '20%') return Math.floor(originalTotal * 0.8);
-            if (couponType === '50%') return Math.floor(originalTotal * 0.5);
-            if (couponType === '99%') return Math.floor(originalTotal * 0.01);
-            return null;
-        }
-
-        document.getElementById('coupon-select').addEventListener('change', function () {
-            const selected = this.options[this.selectedIndex];
-            const couponType = selected.dataset.type || '';
-            const priceDisplay = document.getElementById('price-display');
-            const discounted = calcDiscounted(originalTotal, couponType);
-
-            if (discounted !== null) {
-                const labelMap = {'20%': '20% OFF', '50%': '50% OFF', '99%': '99% OFF'};
-                priceDisplay.innerHTML =
-                    '<span class="original-price">' + originalTotal.toLocaleString() + '円</span>' +
-                    '<span class="discount-badge">' + (labelMap[couponType] || couponType) + '</span><br>' +
-                    '<span class="discounted-price" id="final-price">' + discounted.toLocaleString() + '円</span>';
-            } else {
-                priceDisplay.innerHTML =
-                    '<span class="text-danger" id="final-price">' + originalTotal.toLocaleString() + '円</span>';
-            }
-        });
-    </script>
 </div>
+
+<!-- JS（変更なし・見た目微調整のみ） -->
+<script>
+const originalTotal = {{ total_price }};
+
+function calcDiscounted(originalTotal, couponType) {
+    if (couponType === '20%') return Math.floor(originalTotal * 0.8);
+    if (couponType === '50%') return Math.floor(originalTotal * 0.5);
+    if (couponType === '99%') return Math.floor(originalTotal * 0.01);
+    return null;
+}
+
+document.getElementById('coupon-select').addEventListener('change', function () {
+    const selected = this.options[this.selectedIndex];
+    const couponType = selected.dataset.type || '';
+    const priceDisplay = document.getElementById('price-display');
+    const discounted = calcDiscounted(originalTotal, couponType);
+
+    if (discounted !== null) {
+        const labelMap = {'20%': '20% OFF', '50%': '50% OFF', '99%': '99% OFF'};
+        priceDisplay.innerHTML =
+            '<span style="color:var(--text3); text-decoration:line-through;">' + originalTotal.toLocaleString() + '円</span>' +
+            '<span style="background:#e00; color:#fff; margin-left:6px; padding:2px 6px; border-radius:4px;">' + (labelMap[couponType] || couponType) + '</span><br>' +
+            '<span style="color:var(--ac); font-size:16px; font-weight:bold;">' + discounted.toLocaleString() + '円</span>';
+    } else {
+        priceDisplay.innerHTML =
+            '<span style="color:var(--ac); font-size:16px; font-weight:bold;">' + originalTotal.toLocaleString() + '円</span>';
+    }
+});
+</script>
+
 {% endblock %}
-<!-- </body>
-</html> -->
