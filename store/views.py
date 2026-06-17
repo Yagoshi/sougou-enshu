@@ -59,6 +59,7 @@ def searchResult(request):
     context = {
         'results': results,
         'keyword': keyword,
+        'categories': Category.objects.all(),
         'min_price': price_min,
         'max_price': price_max,
         'selected_min': int(min_price) if min_price else price_min,
