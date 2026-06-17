@@ -1,5 +1,4 @@
 import os
-import json
 import requests
 import google.generativeai as genai
 from django.shortcuts import render, get_object_or_404, redirect
@@ -8,6 +7,14 @@ from django.db import transaction
 from .models import Item, Category, ItemsInCart, Purchase, PurchaseDetail, Review
 from accounts.models import User
 from .forms import ItemForm
+<<<<<<< HEAD
+=======
+from django.contrib.auth.decorators import login_required
+from accounts.models import Coupon, User
+import random
+
+from django.db.models import Avg
+>>>>>>> 1c8092fe87f9c3a77bcd509fbd6f96a386095f64
 from .forms import ReviewForm
 
 def main(request):
@@ -142,21 +149,42 @@ def checkout(request):
     user = get_object_or_404(User, user_id=user_id)
     cart_items = ItemsInCart.objects.filter(user=user)
     if not cart_items: return redirect('store:cart')
+
     total_price = sum(item.item.price * item.amount for item in cart_items)
-    context = {'user': user, 'cart_items': cart_items, 'total_price': total_price}
+    coupons = Coupon.objects.filter(user=user)
+
+    context = {
+        'user': user,
+        'cart_items': cart_items,
+        'total_price': total_price,
+        'coupons': coupons,
+    }
     return render(request, 'store/checkout.html', context)
 
 def checkoutCommit(request):
     user_id = request.session.get('login_user_id')
     if not user_id: return redirect('accounts:login')
     if request.method != 'POST': return redirect('store:cart')
+
     destination = request.POST.get('destination')
     card_number = request.POST.get('card_number', '4242424242424242')
+    coupon_id = request.POST.get('coupon_id')  # 適用するクーポンID
     user = get_object_or_404(User, user_id=user_id)
     cart_items = ItemsInCart.objects.filter(user=user)
     if not cart_items: return redirect('store:cart')
 
     total_price = sum(c.item.price * c.amount for c in cart_items)
+
+    # クーポンを適用
+    if coupon_id:
+        coupon = get_object_or_404(Coupon, id=coupon_id, user=user)
+        if coupon.coupon_type == '20%':
+            total_price *= 0.8
+        elif coupon.coupon_type == '50%':
+            total_price *= 0.5
+        elif coupon.coupon_type == '99%':
+            total_price *= 0.01
+        total_price = int(total_price)  # 小数点以下を切り捨て
 
     # 決済APIにリクエスト
     api_base_url = os.environ.get('API_BASE_URL', 'http://15.152.44.182/api/v1')
@@ -221,6 +249,11 @@ def checkoutCommit(request):
             c_item.item.stock -= c_item.amount
             c_item.item.save()
         cart_items.delete()
+
+        # 適用したクーポンを削除
+        if coupon_id:
+            coupon.delete()
+
     return render(request, 'store/purchaseComplete.html', {'purchase': purchase})
 
 
@@ -358,34 +391,27 @@ def adminPurchaseCancel(request, purchase_id):
 def add_review(request, item_id):
     login_user_id = request.session.get("login_user_id")
 
-    if not login_user_id:
-        return redirect("accounts:login")
+from django.shortcuts import render, redirect, get_object_or_404
+from accounts.models import Coupon, User  # 独自のUserモデルをインポート
+import random
 
-    item = get_object_or_404(Item, item_id=item_id)
-    user = get_object_or_404(User, user_id=login_user_id)
+def coupon_view(request):
+    user_id = request.session.get('login_user_id')
+    if not user_id: 
+        return redirect('accounts:login')
 
-    if request.method == "POST":
-        form = ReviewForm(request.POST)
+    user = get_object_or_404(User, user_id=user_id)
 
-        if form.is_valid():
-            has_purchase = PurchaseDetail.objects.filter(
-                item=item,
-                purchase__user=user,
-                purchase__cancel=False
-            ).exists()
+    existing_coupons = Coupon.objects.filter(user=user)
 
-            Review.objects.update_or_create(
-                item=item,
-                user=user,
-                defaults={
-                    "rating": int(form.cleaned_data["rating"]),
-                    "title": form.cleaned_data["title"],
-                    "comment": form.cleaned_data["comment"],
-                    "is_verified_purchase": has_purchase,
-                }
-            )
+    if existing_coupons.count() >= 3:
+        return render(request, 'store/coupon.html', {'message': 'You already have 3 coupons!'})
 
     return redirect("store:itemDetail", item_id=item.item_id)
+    coupon_type = random.choice(['20%', '50%', '99%'])
+    Coupon.objects.create(user=user, coupon_type=coupon_type)
+
+    return render(request, 'store/coupon.html', {'message': f'You received a {coupon_type} coupon!'})
 # チャットボット
 def itemChat(request, item_id):
     if request.method != 'POST':
@@ -422,8 +448,8 @@ def itemChat(request, item_id):
     try:
         response = model.generate_content(f"{system_prompt}\n\nお客様の質問: {user_message}")
         bot_reply = response.text
-    except Exception as e:
-        bot_reply = f'エラー: {str(e)}'
+    except Exception:
+        bot_reply = '申し訳ありません。現在チャットボットが利用できません。'
 
     # セッションにチャット履歴を保存
     chat_history = request.session.get('chat_history', {})
@@ -436,3 +462,36 @@ def itemChat(request, item_id):
     request.session['chat_history'] = chat_history
 
     return redirect('store:itemDetail', item_id=item_id)
+
+
+def add_review(request, item_id):
+    login_user_id = request.session.get("login_user_id")
+
+    if not login_user_id:
+        return redirect("accounts:login")
+
+    item = get_object_or_404(Item, item_id=item_id)
+    user = get_object_or_404(User, user_id=login_user_id)
+
+    if request.method == "POST":
+        form = ReviewForm(request.POST)
+
+        if form.is_valid():
+            has_purchase = PurchaseDetail.objects.filter(
+                item=item,
+                purchase__user=user,
+                purchase__cancel=False
+            ).exists()
+
+            Review.objects.update_or_create(
+                item=item,
+                user=user,
+                defaults={
+                    "rating": int(form.cleaned_data["rating"]),
+                    "title": form.cleaned_data["title"],
+                    "comment": form.cleaned_data["comment"],
+                    "is_verified_purchase": has_purchase,
+                }
+            )
+
+    return redirect("store:itemDetail", item_id=item.item_id)
