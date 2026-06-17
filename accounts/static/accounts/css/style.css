@@ -182,3 +182,147 @@ a { color: inherit; text-decoration: none; }
 .footer-bottom { padding: 16px 28px; border-top: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; }
 .footer-copy { font-size: 10px; color: var(--text3); }
 .footer-tag { font-size: 10px; color: var(--ac-mid); letter-spacing: 0.06em; }
+
+/* ── ログイン状態表示 ─────────────────────── */
+.login-state-card {
+  width: calc(100% - 56px);
+  margin: 18px 28px 0;
+  padding: 12px 14px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  background: var(--bg2);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+}
+
+.login-state-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.login-state-dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.login-state-card.is-logged-in {
+  background: var(--ac-sub);
+  border-color: rgba(45, 106, 79, 0.22);
+}
+
+.login-state-card.is-logged-in .login-state-dot {
+  background: var(--ac);
+  box-shadow: 0 0 0 4px rgba(45, 106, 79, 0.12);
+}
+
+.login-state-card.is-guest .login-state-dot {
+  background: #c8a24a;
+  box-shadow: 0 0 0 4px rgba(200, 162, 74, 0.14);
+}
+
+.login-state-title {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--text);
+  letter-spacing: 0.04em;
+}
+
+.login-state-desc {
+  font-size: 11px;
+  color: var(--text2);
+  margin-top: 2px;
+}
+
+.login-state-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.login-state-btn {
+  font-size: 11px;
+  padding: 6px 10px;
+  border: 1px solid var(--border2);
+  border-radius: 999px;
+  color: var(--text2);
+  background: var(--bg);
+  transition: all 0.15s;
+}
+
+.login-state-btn:hover {
+  border-color: var(--ac);
+  color: var(--ac);
+}
+
+.login-state-btn.primary {
+  background: var(--ac);
+  border-color: var(--ac);
+  color: var(--ac-text);
+}
+
+.login-state-btn.danger {
+  color: #c0392b;
+  border-color: rgba(192, 57, 43, 0.35);
+}
+
+.login-state-btn.danger:hover {
+  background: #c0392b;
+  color: #fff;
+  border-color: #c0392b;
+}
+
+.nav-icons {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.nav-icons a {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.nav-cart-icon {
+  font-size: 20px;
+  line-height: 1;
+  transition: transform 0.15s;
+}
+
+.nav-pop-icon {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background: #fff3cd;
+  border: 1px solid #ffd166;
+  font-size: 17px;
+  line-height: 1;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
+  transition: transform 0.15s, box-shadow 0.15s;
+}
+
+.nav-cart-icon:hover,
+.nav-pop-icon:hover {
+  transform: translateY(-1px);
+}
+
+.nav-pop-icon:hover {
+  box-shadow: 0 6px 14px rgba(0, 0, 0, 0.12);
+}
+
+.btn-login-outline {
+  background: var(--bg);
+  color: var(--btn-bg);
+  border: 1px solid var(--btn-bg);
+}
+
+.btn-login-outline:hover {
+  background: var(--bg2);
+  opacity: 1;
+}
