@@ -28,6 +28,24 @@
 {% endblock %}
 
 {% block content %}
+<div class="login-state-card {% if request.session.login_user_id %}is-logged-in{% else %}is-guest{% endif %}">
+    <div class="login-state-left">
+        <span class="login-state-dot"></span>
+
+        <div>
+            {% if request.session.login_user_id %}
+                <div class="login-state-title">{{ request.session.login_user_id }}さん、こんにちは</div>
+            {% else %}
+                <div class="login-state-title">未ログイン</div>
+                <div class="login-state-desc">
+                    商品の閲覧はできます。購入・レビュー投稿にはログインが必要です。
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+</div>
 <div class="hero">
     <div class="hero-left">
         <div class="hero-bg-num">EC</div>
@@ -36,8 +54,21 @@
             <h1 class="hero-title">こだわりの<br>商品を届ける</h1>
             <p class="hero-desc">厳選した商品を取り揃えています。お気に入りの一品を見つけてください。</p>
             <div class="hero-cta-row">
-                <a href="{% url 'accounts:registerUser' %}"><button class="btn-primary">会員登録</button></a>
-                <a href="{% url 'accounts:login' %}"><button class="btn-ghost">ログイン</button></a>
+                <div class="hero-cta-row">
+                    {% if request.session.login_user_id %}
+                        <a href="{% url 'store:cart' %}">
+                            <button class="btn-primary">カートを見る</button>
+                        </a>
+                    {% else %}
+                    <a href="{% url 'accounts:login' %}">
+                        <button class="btn-primary btn-login-outline">ログイン</button>
+                    </a>
+                    
+                    <a href="{% url 'accounts:registerUser' %}">
+                        <button class="btn-primary">会員登録</button>
+                    </a>
+                    {% endif %}
+                </div>
             </div>
         </div>
     </div>

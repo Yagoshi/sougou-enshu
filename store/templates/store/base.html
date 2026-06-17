@@ -25,7 +25,19 @@
         {% endif %}
     </div>
     <div class="nav-icons">
-        <a href="{% url 'store:cart' %}">🛒</a>
+        <a href="{% url 'store:cart' %}" class="nav-cart-icon" title="カート">
+            🛒
+        </a>
+    
+        {% if request.session.login_user_id %}
+            <a href="{% url 'accounts:userInfo' %}" class="nav-pop-icon" title="マイページ">
+                🧸
+            </a>
+        {% else %}
+            <a href="{% url 'accounts:login' %}" class="nav-pop-icon" title="ログイン">
+                🧸
+            </a>
+        {% endif %}
     </div>
 </nav>
 
