@@ -15,20 +15,54 @@ from django.db.models import Avg
 from .forms import ReviewForm
 
 def main(request):
-    items = Item.objects.all()
+    from django.db.models import Avg, Count, Min, Max
+    items = Item.objects.annotate(
+        avg_rating=Avg('reviews__rating'),
+        review_count=Count('reviews')
+    )
     categories = Category.objects.all()
-    context = {'items': items, 'categories': categories}
+    price_min = Item.objects.aggregate(Min('price'))['price__min'] or 0
+    price_max = Item.objects.aggregate(Max('price'))['price__max'] or 100000
+    context = {
+        'items': items,
+        'categories': categories,
+        'min_price': price_min,
+        'max_price': price_max,
+    }
     return render(request, 'store/main.html', context)
 
 def searchResult(request):
+    from django.db.models import Avg, Count, Min, Max
     keyword = request.GET.get('keyword')
     category_id = request.GET.get('category')
-    results = Item.objects.all()
+    min_price = request.GET.get('min_price')
+    max_price = request.GET.get('max_price')
+
+    results = Item.objects.annotate(
+        avg_rating=Avg('reviews__rating'),
+        review_count=Count('reviews')
+    )
+
     if keyword:
         results = results.filter(name__icontains=keyword)
     if category_id:
         results = results.filter(category_id=category_id)
-    context = {'results': results, 'keyword': keyword}
+    if min_price:
+        results = results.filter(price__gte=int(min_price))
+    if max_price:
+        results = results.filter(price__lte=int(max_price))
+
+    price_min = Item.objects.aggregate(Min('price'))['price__min'] or 0
+    price_max = Item.objects.aggregate(Max('price'))['price__max'] or 100000
+
+    context = {
+        'results': results,
+        'keyword': keyword,
+        'min_price': price_min,
+        'max_price': price_max,
+        'selected_min': int(min_price) if min_price else price_min,
+        'selected_max': int(max_price) if max_price else price_max,
+    }
     return render(request, 'store/searchResult.html', context)
 
 def itemDetail(request, item_id):
