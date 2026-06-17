@@ -355,7 +355,6 @@ def adminPurchaseCancel(request, purchase_id):
 
     return redirect('store:adminPurchaseList')
 
-<<<<<<< HEAD
 def add_review(request, item_id):
     login_user_id = request.session.get("login_user_id")
 
@@ -387,7 +386,6 @@ def add_review(request, item_id):
             )
 
     return redirect("store:itemDetail", item_id=item.item_id)
-=======
 # チャットボット
 def itemChat(request, item_id):
     if request.method != 'POST':
@@ -438,4 +436,3 @@ def itemChat(request, item_id):
     request.session['chat_history'] = chat_history
 
     return redirect('store:itemDetail', item_id=item_id)
->>>>>>> b9914bf51dfc47a1433c58bc89ae5fb6c1df3e96

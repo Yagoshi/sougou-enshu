@@ -26,9 +26,6 @@ urlpatterns = [
     path('admin_main/purchase/', views.adminPurchaseList, name='adminPurchaseList'),
     path('admin_main/purchase/cancel/<int:purchase_id>/', views.adminPurchaseCancel, name='adminPurchaseCancel'),
 
-<<<<<<< HEAD
     path("item/<int:item_id>/review/", views.add_review, name="add_review"),
-=======
     path('items/<int:item_id>/chat/', views.itemChat, name='itemChat'),
->>>>>>> b9914bf51dfc47a1433c58bc89ae5fb6c1df3e96
 ]
