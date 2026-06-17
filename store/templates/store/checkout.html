@@ -1,79 +1,57 @@
+{% extends 'store/base.html' %}
 {% load static %}
-<!DOCTYPE html>
-<html lang="ja">
-<head>
-    <meta charset="UTF-8">
-    <title>購入確認</title>
-    <link rel='stylesheet' type='text/css' href='{% static "accounts/css/style.css" %}' />
-</head>
-<body>
-    <h1>購入確認</h1>
 
-    <h2>ご注文内容</h2>
-    <table class="center">
-        <tr>
-            <th>商品名</th>
-            <th>数量</th>
-            <th>小計</th>
-        </tr>
-        {% for cart_item in cart_items %}
+{% block title %}購入確認 | SOUGOU STORE{% endblock %}
+
+{% block content %}
+<div class="section" style="max-width: 680px; margin: 0 auto;">
+    <div class="section-header">
+        <span class="section-title">ご注文内容の確認</span>
+    </div>
+
+    {% if error_message %}
+    <div class="form-error">{{ error_message }}</div>
+    {% endif %}
+
+    <table class="data-table" style="margin-bottom: 28px;">
+        <thead>
+            <tr>
+                <th>商品名</th>
+                <th style="text-align:center;">数量</th>
+                <th style="text-align:right;">小計</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for cart_item in cart_items %}
             <tr>
                 <td>{{ cart_item.item.name }}</td>
-                <td>{{ cart_item.amount }}個</td>
-                <td>{% widthratio cart_item.item.price 1 cart_item.amount %}円</td>
+                <td style="text-align:center;">{{ cart_item.amount }}個</td>
+                <td style="text-align:right;">¥{% widthratio cart_item.item.price 1 cart_item.amount %}</td>
             </tr>
-        {% endfor %}
-        <tr>
-            <th>お支払い合計</th>
-            <td colspan="2" class="text-danger">{{ total_price }}円</td>
-        </tr>
+            {% endfor %}
+        </tbody>
+        <tfoot>
+            <tr>
+                <td colspan="2" style="padding: 14px 12px; font-weight: 500; border-top: 1px solid var(--border);">合計</td>
+                <td style="padding: 14px 12px; text-align: right; font-size: 18px; font-weight: 700; border-top: 1px solid var(--border);">¥{{ total_price }}</td>
+            </tr>
+        </tfoot>
     </table>
 
     <form action="{% url 'store:checkoutCommit' %}" method="POST">
         {% csrf_token %}
-
-        <h2>クーポンを選択</h2>
-        <table class="center">
-            <tr>
-                <th>クーポン</th>
-                <td>
-                    <select name="coupon_id">
-                        <option value="">クーポンを使用しない</option>
-                        {% for coupon in coupons %}
-                            <option value="{{ coupon.id }}">{{ coupon.coupon_type }}</option>
-                        {% endfor %}
-                    </select>
-                </td>
-            </tr>
-        </table>
-
-        <h2>配送先住所</h2>
-        <table class="center">
-            <tr>
-                <th>お届け先</th>
-                <td>
-                    <input type="text" name="destination" value="{{ user.address }}" style="width: 300px;" required><br>
-                    <span class="text-muted">※登録住所以外に発送する場合は変更してください。</span>
-                </td>
-            </tr>
-        </table>
-
-        {% if error_message %}
-            <p class="text-danger">{{ error_message }}</p>
-        {% endif %}
-
-        <h2>お支払い方法（クレジットカード）</h2>
-        <table class="center">
-            <tr>
-                <th>カード番号</th>
-                <td><input type="text" name="card_number" value="4242424242424242" maxlength="16" required></td>
-            </tr>
-        </table>
-        <p class="text-muted">※テスト用カード番号: 4242424242424242（成功） / 4000000000000000（失敗）</p>
-
-        <button type="submit" class="btn btn-success btn-block">注文を確定する</button>
+        <div class="form-group">
+            <label class="form-label">お届け先住所</label>
+            <input type="text" name="destination" value="{{ user.address }}" required class="form-input">
+            <p class="form-hint">※登録住所以外に発送する場合は変更してください。</p>
+        </div>
+        <div class="form-group">
+            <label class="form-label">カード番号</label>
+            <input type="text" name="card_number" value="4242424242424242" maxlength="16" required class="form-input">
+            <p class="form-hint">※テスト用：4242424242424242（成功）/ 4000000000000000（失敗）</p>
+        </div>
+        <button type="submit" class="btn-cart">注文を確定する</button>
     </form>
-
-    <a href="{% url 'store:cart' %}" class="back-link">← カートに戻る</a>
-</body>
-</html>
+    <a href="{% url 'store:cart' %}" style="font-size:12px; color:var(--ac); display:block; margin-top:16px;">← カートに戻る</a>
+</div>
+{% endblock %}

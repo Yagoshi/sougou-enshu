@@ -1,91 +1,85 @@
+{% extends 'store/base.html' %}
 {% load static %}
-<!DOCTYPE html>
-<html lang="ja">
-<head>
-    <meta charset="UTF-8">
-    <title>商品一覧</title>
-    <link rel='stylesheet' type='text/css' href='{% static "accounts/css/style.css" %}' />
-</head>
-<body>
-    <h1>商品の検索を行います。</h1>
 
-    {% if request.session.login_user_id %}
-        <p class="text-success">
-            ログイン中: {{ request.session.login_user_id }} さん
-            | <a href="{% url 'accounts:logout' %}">ログアウト</a>
-        </p>
-    {% else %}
-        <p><a href="{% url 'accounts:login' %}">ログインはこちら</a></p>
-    {% endif %}
-    
+{% block title %}商品一覧 | SOUGOU STORE{% endblock %}
 
-    <div class="card">
-        <form action="{% url 'store:searchResult' %}" method="GET">
-            <table class="center">
-                <tr>
-                    <th>キーワード:</th>
-                    <td><input type="text" name="keyword" class="text" placeholder="商品名で検索"></td>
-                </tr>
-                <tr>
-                    <th>カテゴリ:</th>
-                    <td>
-                        <select name="category">
-                            <option value="">すべてのカテゴリ</option>
-                            {% for cat in categories %}
-                                <option value="{{ cat.category_id }}">{{ cat.name }}</option>
-                            {% endfor %}
-                        </select>
-                    </td>
-                </tr>
-                <tr>
-                    <td colspan="2" style="text-align: center;">
-                        <button type="submit">検索する</button>
-                    </td>
-                </tr>
-            </table>
-        </form>
+{% block content %}
+<div class="hero">
+    <div class="hero-left">
+        <div class="hero-bg-num">EC</div>
+        <div class="hero-content">
+            <span class="hero-eyebrow">SOUGOU STORE</span>
+            <h1 class="hero-title">こだわりの<br>商品を届ける</h1>
+            <p class="hero-desc">厳選した商品を取り揃えています。お気に入りの一品を見つけてください。</p>
+            <div class="hero-cta-row">
+                <a href="{% url 'store:searchResult' %}"><button class="btn-primary">商品を探す</button></a>
+                <a href="{% url 'accounts:registerUser' %}"><button class="btn-ghost">会員登録</button></a>
+            </div>
+        </div>
+    </div>
+    <div class="hero-right">
+        {% with featured=items|first %}
+        <div class="hero-panel-top">
+            <div class="panel-label">PICKUP ITEM</div>
+            {% if featured %}
+            <div>
+                <div class="panel-price">¥{{ featured.price }}</div>
+                <div class="panel-name">{{ featured.name }}</div>
+            </div>
+            <div class="panel-stock"><div class="panel-stock-dot"></div>在庫 {{ featured.stock }}個</div>
+            {% endif %}
+        </div>
+        {% endwith %}
+        <div class="hero-panel-bot">
+            <div class="panel-cat-label">CATEGORIES</div>
+            {% for cat in categories %}
+            <a href="{% url 'store:searchResult' %}?category={{ cat.category_id }}">
+                <div class="cat-item">
+                    <div class="cat-left"><div class="cat-bullet"></div><span class="cat-name">{{ cat.name }}</span></div>
+                    <span class="cat-count">→</span>
+                </div>
+            </a>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+
+<div class="section">
+    <div class="section-header">
+        <span class="section-title">ALL ITEMS</span>
+        <a href="{% url 'store:searchResult' %}" class="section-more">すべて見る →</a>
     </div>
 
-    <table class="center">
-        <tr>
-            <th>商品名</th>
-            <th>メーカー</th>
-            <th>価格</th>
-            <th>カテゴリ</th>
-        </tr>
+    <form action="{% url 'store:searchResult' %}" method="GET" style="margin-bottom: 24px; display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
+        <input type="text" name="keyword" placeholder="キーワードで検索"
+            style="padding: 8px 12px; border: 1px solid var(--border2); border-radius: var(--radius); font-size: 12px; min-width: 200px; font-family: 'Noto Sans JP', sans-serif; background: var(--bg); color: var(--text); outline: none;">
+        <select name="category"
+            style="padding: 8px 12px; border: 1px solid var(--border2); border-radius: var(--radius); font-size: 12px; font-family: 'Noto Sans JP', sans-serif; color: var(--text2); background: var(--bg);">
+            <option value="">すべてのカテゴリ</option>
+            {% for cat in categories %}
+                <option value="{{ cat.category_id }}">{{ cat.name }}</option>
+            {% endfor %}
+        </select>
+        <button type="submit" class="btn-primary" style="padding: 8px 16px;">検索</button>
+    </form>
+
+    <div class="product-grid">
         {% for item in items %}
-            <tr>
-                <td><a href="{% url 'store:itemDetail' item.item_id %}">{{ item.name }}</a></td>
-                <td>{{ item.manufacturer }}</td>
-                <td>{{ item.price }}円</td>
-                <td>{{ item.category.name }}</td>
-            </tr>
+        <a href="{% url 'store:itemDetail' item.item_id %}" class="product-card">
+            <div class="product-img">
+                {% if item.recommended %}<span class="badge-new">PICK</span>{% endif %}
+                {% if item.image %}
+                    <img src="{{ item.image.url }}" alt="{{ item.name }}" style="width:100%; height:100%; object-fit:cover;">
+                {% else %}
+                    <span style="font-size: 40px;">🛍️</span>
+                {% endif %}
+            </div>
+            <div class="product-name">{{ item.name }}</div>
+            <div class="product-price">¥{{ item.price }}<span class="product-tax">（税込）</span></div>
+        </a>
         {% empty %}
-            <tr>
-                <td colspan="4">現在、商品は登録されていません。</td>
-            </tr>
+        <p style="color: var(--text2); font-size: 13px; grid-column: 1/-1;">商品が登録されていません。</p>
         {% endfor %}
-    </table>
-
-    <div class="card">
-        <h3>ページ一覧（開発用）</h3>
-        <ul>
-            <li><a href="{% url 'store:main' %}">商品一覧</a></li>
-            <li><a href="{% url 'store:searchResult' %}">検索結果</a></li>
-            <li><a href="{% url 'store:cart' %}">ショッピングカート</a></li>
-            <li><a href="{% url 'store:checkout' %}">購入確認</a></li>
-    
-            <li><a href="{% url 'accounts:login' %}">ログイン</a></li>
-            <li><a href="{% url 'accounts:registerUser' %}">会員登録</a></li>
-            <li><a href="{% url 'accounts:userInfo' %}">会員情報確認</a></li>
-            <li><a href="{% url 'accounts:updateUser' %}">会員情報更新</a></li>
-            <li><a href="{% url 'accounts:withdrawConfirm' %}">退会確認</a></li>
-            <li><a href="{% url 'accounts:adminLogin' %}">管理者ログイン</a></li>
-    
-            <li><a href="{% url 'store:adminMain' %}">管理者メイン</a></li>
-            <li><a href="{% url 'store:adminItemAdd' %}">商品登録</a></li>
-            <li><a href="{% url 'store:adminPurchaseList' %}">注文履歴管理</a></li>
-        </ul>
     </div>
-</body>
-</html>
+</div>
+{% endblock %}

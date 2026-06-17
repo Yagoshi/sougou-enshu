@@ -1,0 +1,84 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}SOUGOU STORE{% endblock %}</title>
+    <link rel="stylesheet" href="{% static 'accounts/css/style.css' %}">
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+
+<!-- ナビゲーション -->
+<nav class="nav">
+    <a href="{% url 'store:main' %}" class="nav-logo">SOUGOU STORE</a>
+    <div class="nav-links">
+        <a href="{% url 'store:main' %}">商品一覧</a>
+        <a href="{% url 'store:searchResult' %}">検索</a>
+        {% if request.session.login_user_id %}
+            <a href="{% url 'accounts:userInfo' %}">マイページ</a>
+            <a href="{% url 'accounts:logout' %}">ログアウト</a>
+        {% else %}
+            <a href="{% url 'accounts:login' %}">ログイン</a>
+            <a href="{% url 'accounts:registerUser' %}">会員登録</a>
+        {% endif %}
+    </div>
+    <div class="nav-icons">
+        <a href="{% url 'store:cart' %}">🛒</a>
+    </div>
+</nav>
+
+<!-- ティッカー -->
+<div class="ticker">
+    <div class="ticker-inner">
+        <span class="ticker-item">送料無料キャンペーン実施中<span class="ticker-sep"></span></span>
+        <span class="ticker-item">新商品続々入荷<span class="ticker-sep"></span></span>
+        <span class="ticker-item">会員登録で特典あり<span class="ticker-sep"></span></span>
+        <span class="ticker-item">送料無料キャンペーン実施中<span class="ticker-sep"></span></span>
+        <span class="ticker-item">新商品続々入荷<span class="ticker-sep"></span></span>
+        <span class="ticker-item">会員登録で特典あり<span class="ticker-sep"></span></span>
+    </div>
+</div>
+
+<!-- メインコンテンツ -->
+<main>
+    {% block content %}{% endblock %}
+</main>
+
+<!-- フッター -->
+<footer class="footer">
+    <div>
+        <div class="footer-brand">SOUGOU STORE</div>
+        <div class="footer-accent-bar"></div>
+        <p class="footer-desc">品質にこだわった商品をお届けします。</p>
+    </div>
+    <div>
+        <div class="footer-col-title">MENU</div>
+        <div class="footer-links">
+            <a href="{% url 'store:main' %}">商品一覧</a>
+            <a href="{% url 'store:cart' %}">カート</a>
+            <a href="{% url 'accounts:login' %}">ログイン</a>
+            <a href="{% url 'accounts:registerUser' %}">会員登録</a>
+        </div>
+    </div>
+    <div>
+        <div class="footer-col-title">ACCOUNT</div>
+        <div class="footer-links">
+            {% if request.session.login_user_id %}
+                <a href="{% url 'accounts:userInfo' %}">マイページ</a>
+                <a href="{% url 'accounts:logout' %}">ログアウト</a>
+            {% else %}
+                <a href="{% url 'accounts:login' %}">ログイン</a>
+            {% endif %}
+        </div>
+    </div>
+</footer>
+<div class="footer-bottom">
+    <span class="footer-copy">© 2026 SOUGOU STORE</span>
+    <span class="footer-tag">DJANGO × BOOTSTRAP</span>
+</div>
+
+{% block extra_js %}{% endblock %}
+</body>
+</html>

@@ -1,25 +1,28 @@
+{% extends 'store/base.html' %}
 {% load static %}
-<!DOCTYPE html>
-<html lang="ja">
-<head>
-    <meta charset="UTF-8">
-    <title>会員情報更新確認</title>
-    <link rel='stylesheet' type='text/css' href='{% static "accounts/css/style.css" %}' />
-</head>
-<body class="narrow">
-    <h1>会員情報更新 (確認)</h1>
-    <p>以下の内容で情報を更新します。よろしいですか？</p>
 
-    <div class="card">
-        <p><strong>新しいお名前:</strong> {{ data.name }}</p>
-        <p><strong>新しいご住所:</strong> {{ data.address }}</p>
+{% block title %}会員情報更新確認 | SOUGOU STORE{% endblock %}
+
+{% block content %}
+<div class="form-wrap">
+    <h2 class="form-title">会員情報更新（確認）</h2>
+    <p style="font-size:13px; color:var(--text2); margin-bottom:20px;">以下の内容で更新します。よろしいですか？</p>
+
+    <div class="confirm-card">
+        <div class="confirm-row"><span class="confirm-label">新しいお名前</span><span class="confirm-value">{{ data.name }}</span></div>
+        <div class="confirm-row"><span class="confirm-label">新しいご住所</span><span class="confirm-value">{{ data.address }}</span></div>
+        {% if data.new_password %}
+        <div class="confirm-row"><span class="confirm-label">パスワード</span><span class="confirm-value">変更あり</span></div>
+        {% endif %}
     </div>
 
     <form method="POST">
         {% csrf_token %}
-        <button type="submit">この内容で更新する</button>
+        <button type="submit" class="btn-primary" style="width:100%; padding:12px;">この内容で更新する</button>
     </form>
 
-    <a href="{% url 'accounts:updateUser' %}" class="back-link">← 入力画面に戻って修正する</a>
-</body>
-</html>
+    <div class="form-links">
+        <a href="{% url 'accounts:updateUser' %}" class="muted">← 入力画面に戻って修正する</a>
+    </div>
+</div>
+{% endblock %}

@@ -1,48 +1,45 @@
+{% extends 'store/base.html' %}
 {% load static %}
-<!DOCTYPE html>
-<html lang="ja">
-<head>
-    <meta charset="UTF-8">
-    <title>購入履歴</title>
-    <link rel='stylesheet' type='text/css' href='{% static "accounts/css/style.css" %}' />
-</head>
-<body>
-    <h1>購入履歴</h1>
+
+{% block title %}購入履歴 | SOUGOU STORE{% endblock %}
+
+{% block content %}
+<div class="section" style="max-width: 680px; margin: 0 auto;">
+    <div class="section-header">
+        <span class="section-title">購入履歴</span>
+        <a href="{% url 'accounts:userInfo' %}" class="section-more">← マイページへ</a>
+    </div>
 
     {% if purchase_history %}
         {% for history in purchase_history %}
-            <h3>注文日時: {{ history.purchase.booked_date|date:"Y年m月d日 H:i" }}</h3>
-
-            <table class="center">
-                <tr>
-                    <th>配送先</th>
-                    <td>{{ history.purchase.destination }}</td>
-                </tr>
-                <tr>
-                    <th>お支払い合計金額</th>
-                    <td class="text-danger">{{ history.total_price }}円</td>
-                </tr>
-            </table>
-
-            <table class="center">
-                <tr>
-                    <th>商品名</th>
-                    <th>数量</th>
-                    <th>小計</th>
-                </tr>
-                {% for detail in history.details %}
+        <div class="purchase-card" style="margin-bottom:16px;">
+            <div class="purchase-card-header">
+                <span style="font-size:13px; font-weight:500;">{{ history.purchase.booked_date|date:"Y年m月d日 H:i" }}</span>
+                <span style="font-size:13px; font-weight:700; color:var(--ac);">¥{{ history.total_price }}</span>
+            </div>
+            <div style="font-size:12px; color:var(--text3); margin-bottom:10px;">配送先：{{ history.purchase.destination }}</div>
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>商品名</th>
+                        <th style="text-align:center;">数量</th>
+                        <th style="text-align:right;">小計</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for detail in history.details %}
                     <tr>
                         <td>{{ detail.item.name }}</td>
-                        <td>{{ detail.amount }}個</td>
-                        <td>{% widthratio detail.item.price 1 detail.amount %}円</td>
+                        <td style="text-align:center;">{{ detail.amount }}個</td>
+                        <td style="text-align:right;">¥{% widthratio detail.item.price 1 detail.amount %}</td>
                     </tr>
-                {% endfor %}
+                    {% endfor %}
+                </tbody>
             </table>
+        </div>
         {% endfor %}
     {% else %}
-        <p class="text-muted">購入履歴はありません。</p>
+        <p style="color:var(--text3); font-size:13px;">購入履歴はありません。</p>
     {% endif %}
-
-    <a href="{% url 'accounts:userInfo' %}" class="back-link">← 会員情報確認に戻る</a>
-</body>
-</html>
+</div>
+{% endblock %}

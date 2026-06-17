@@ -1,0 +1,20 @@
+# Django本体
+Django==6.0.6
+
+# MySQL接続
+PyMySQL==1.2.0
+
+# 環境変数管理
+python-dotenv==1.2.2
+
+# 画像アップロード対応
+Pillow==10.1.0
+
+# 支払API連携
+requests==2.34.2
+
+# Django REST Framework（将来の拡張用）
+djangorestframework==3.17.1
+
+# Gemini API
+google-generativeai

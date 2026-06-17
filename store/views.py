@@ -15,7 +15,6 @@ from django.db.models import Avg
 from .forms import ReviewForm
 
 
-
 def main(request):
     items = Item.objects.all()
     categories = Category.objects.all()

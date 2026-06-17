@@ -1,29 +1,28 @@
+{% extends 'store/base.html' %}
 {% load static %}
-<!DOCTYPE html>
-<html lang="ja">
-<head>
-    <meta charset="UTF-8">
-    <title>会員登録</title>
-    <link rel='stylesheet' type='text/css' href='{% static "accounts/css/style.css" %}' />
-</head>
-<body class="narrow">
-    <h1>会員登録</h1>
 
-    <div class="card">
-        <form method="POST">
-            {% csrf_token %}
-            <table class="center">
-                {{ form.as_table }}
+{% block title %}会員登録 | SOUGOU STORE{% endblock %}
 
-                <tr>
-                    <td colspan="2" style="text-align: center;">
-                        <button type="submit">確認画面へ</button>
-                    </td>
-                </tr>
-            </table>
-        </form>
+{% block content %}
+<div class="form-wrap">
+    <h2 class="form-title">会員登録</h2>
+
+    <form method="POST" style="display:flex; flex-direction:column; gap:14px;">
+        {% csrf_token %}
+        {% for field in form %}
+        <div class="form-group">
+            <label class="form-label">{{ field.label }}</label>
+            {{ field }}
+            {% if field.errors %}
+            <p style="color:#c0392b; font-size:12px; margin-top:4px;">{{ field.errors|join:", " }}</p>
+            {% endif %}
+        </div>
+        {% endfor %}
+        <button type="submit" class="btn-primary" style="width:100%; padding:12px;">確認画面へ</button>
+    </form>
+
+    <div class="form-links">
+        <a href="{% url 'store:main' %}" class="muted">← トップページに戻る</a>
     </div>
-
-    <a href="{% url 'store:main' %}" class="back-link">← トップページに戻る</a>
-</body>
-</html>
+</div>
+{% endblock %}

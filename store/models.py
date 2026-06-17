@@ -118,3 +118,4 @@ class Review(models.Model):
     @property
     def stars(self):
         return "★" * self.rating + "☆" * (5 - self.rating)
+
