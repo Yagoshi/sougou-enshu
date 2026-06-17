@@ -8,7 +8,7 @@
 
     <!-- タイトル -->
     <div class="section-header">
-        <span class="section-title">CHECKOUT</span>
+        <span class="section-title">購入確認</span>
     </div>
 
     <!-- 注文内容 -->
@@ -36,13 +36,13 @@
 
         <!-- 合計 -->
         <div id="price-display" style="margin-top:15px; text-align:right;">
+            <span style="font-size: 12px; color: var(--text3);">お支払合計：</span>
             <span style="color: var(--ac); font-size: 16px; font-weight: bold;" id="final-price">
                 {{ total_price }}円
             </span>
         </div>
     </div>
 
-    <!-- フォーム開始 -->
     <form action="{% url 'store:checkoutCommit' %}" method="POST">
         {% csrf_token %}
 
@@ -77,19 +77,38 @@
             </p>
         </div>
 
-        <!-- 支払い -->
+        <!-- 支払い方法 -->
         <div style="background: var(--bg2); padding: 20px; border-radius: var(--radius-lg); margin-bottom: 20px;">
-            <h2 style="font-size: 14px; margin-bottom: 10px;">クレジットカード</h2>
+            <h2 style="font-size: 14px; margin-bottom: 10px;">
+                お支払方法
+            </h2>
 
-            <input type="text" name="card_number"
-                   value="4242424242424242"
-                   maxlength="16"
-                   required
-                   style="width:100%; padding:8px; border:1px solid var(--border2); border-radius:var(--radius);">
+            <!-- 支払い方法選択 -->
+            <select id="payment-method"
+                    style="width:100%; padding:8px; border:1px solid var(--border2); border-radius:var(--radius); margin-bottom:10px;">
+                <option value="card" selected>クレジットカード</option>
+                <option value="cod">代金引換</option>
+            </select>
 
-            <p style="font-size:11px; color:var(--text3); margin-top:6px;">
-                ※テスト用カード番号: 4242...（成功） / 4000...（失敗）
-            </p>
+            <!-- クレジットカード入力 -->
+            <div id="card-area">
+                <input type="text" name="card_number"
+                       value="4242424242424242"
+                       maxlength="16"
+                       required
+                       style="width:100%; padding:8px; border:1px solid var(--border2); border-radius:var(--radius);">
+
+                <p style="font-size:11px; color:var(--text3); margin-top:6px;">
+                    ※テスト用カード番号: 4242...（成功） / 4000...（失敗）
+                </p>
+            </div>
+
+            <!-- 代金引換 -->
+            <div id="cod-area" style="display:none;">
+                <p style="font-size:12px; color:var(--text2);">
+                    商品お届け時にお支払いください。
+                </p>
+            </div>
         </div>
 
         <!-- エラー -->
@@ -101,22 +120,22 @@
         <button type="submit" class="btn-primary" style="width:100%; padding:12px;">
             注文を確定する
         </button>
-
     </form>
 
     <!-- 戻る -->
     <div style="margin-top:15px;">
-        <a href="{% url 'store:cart' %}" class="btn-ghost" style="padding:6px 12px;">
+        <a href="{% url 'store:cart' %}" style="color: var(--text2);">
             ← カートに戻る
         </a>
     </div>
 
 </div>
 
-<!-- JS（変更なし・見た目微調整のみ） -->
+<!-- JS -->
 <script>
 const originalTotal = {{ total_price }};
 
+// クーポン処理
 function calcDiscounted(originalTotal, couponType) {
     if (couponType === '20%') return Math.floor(originalTotal * 0.8);
     if (couponType === '50%') return Math.floor(originalTotal * 0.5);
@@ -133,13 +152,22 @@ document.getElementById('coupon-select').addEventListener('change', function () 
     if (discounted !== null) {
         const labelMap = {'20%': '20% OFF', '50%': '50% OFF', '99%': '99% OFF'};
         priceDisplay.innerHTML =
-            '<span style="color:var(--text3); text-decoration:line-through;">' + originalTotal.toLocaleString() + '円</span>' +
+            '<span style="color:var(--text3);">お支払合計：</span>' +
+            '<span style="text-decoration:line-through; color:var(--text3);">' + originalTotal.toLocaleString() + '円</span>' +
             '<span style="background:#e00; color:#fff; margin-left:6px; padding:2px 6px; border-radius:4px;">' + (labelMap[couponType] || couponType) + '</span><br>' +
             '<span style="color:var(--ac); font-size:16px; font-weight:bold;">' + discounted.toLocaleString() + '円</span>';
     } else {
         priceDisplay.innerHTML =
+            '<span style="color:var(--text3);">お支払合計：</span>' +
             '<span style="color:var(--ac); font-size:16px; font-weight:bold;">' + originalTotal.toLocaleString() + '円</span>';
     }
+});
+
+// 支払い方法切替
+document.getElementById("payment-method").addEventListener("change", function() {
+    const method = this.value;
+    document.getElementById("card-area").style.display = method === "card" ? "block" : "none";
+    document.getElementById("cod-area").style.display = method === "cod" ? "block" : "none";
 });
 </script>
 
