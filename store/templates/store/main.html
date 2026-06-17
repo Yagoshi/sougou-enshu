@@ -52,17 +52,32 @@
             <th>メーカー</th>
             <th>価格</th>
             <th>カテゴリ</th>
+            <th>評価</th>
         </tr>
+    
         {% for item in items %}
             <tr>
-                <td><a href="{% url 'store:itemDetail' item.item_id %}">{{ item.name }}</a></td>
+                <td>
+                    <a href="{% url 'store:itemDetail' item.item_id %}">
+                        {{ item.name }}
+                    </a>
+                </td>
                 <td>{{ item.manufacturer }}</td>
                 <td>{{ item.price }}円</td>
                 <td>{{ item.category.name }}</td>
+                <td class="rating-cell">
+                    {% if item.avg_rating %}
+                        <span class="rating-star">★</span>
+                        {{ item.avg_rating|floatformat:1 }}
+                        <span class="rating-count">({{ item.review_count }}件)</span>
+                    {% else %}
+                        <span class="no-rating">評価なし</span>
+                    {% endif %}
+                </td>
             </tr>
         {% empty %}
             <tr>
-                <td colspan="4">現在、商品は登録されていません。</td>
+                <td colspan="5">現在、商品は登録されていません。</td>
             </tr>
         {% endfor %}
     </table>

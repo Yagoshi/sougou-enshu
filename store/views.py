@@ -1,29 +1,48 @@
 import os
 import requests
 from django.shortcuts import render, get_object_or_404, redirect
-from django.db.models import Max
+from django.db.models import Max, Avg, Count
 from django.db import transaction
 from .models import Item, Category, ItemsInCart, Purchase, PurchaseDetail, Review
 from accounts.models import User
 from .forms import ItemForm
-from django.db.models import Avg
 from .forms import ReviewForm
 
 def main(request):
-    items = Item.objects.all()
+    items = Item.objects.annotate(
+        avg_rating=Avg("reviews__rating"),
+        review_count=Count("reviews")
+    )
+
     categories = Category.objects.all()
-    context = {'items': items, 'categories': categories}
+
+    context = {
+        'items': items,
+        'categories': categories
+    }
+
     return render(request, 'store/main.html', context)
 
 def searchResult(request):
     keyword = request.GET.get('keyword')
     category_id = request.GET.get('category')
-    results = Item.objects.all()
+
+    results = Item.objects.annotate(
+        avg_rating=Avg("reviews__rating"),
+        review_count=Count("reviews")
+    )
+
     if keyword:
         results = results.filter(name__icontains=keyword)
+
     if category_id:
         results = results.filter(category_id=category_id)
-    context = {'results': results, 'keyword': keyword}
+
+    context = {
+        'results': results,
+        'keyword': keyword
+    }
+
     return render(request, 'store/searchResult.html', context)
 
 def itemDetail(request, item_id):
