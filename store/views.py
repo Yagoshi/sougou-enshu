@@ -6,6 +6,10 @@ from django.db import transaction
 from .models import Item, Category, ItemsInCart, Purchase, PurchaseDetail
 from accounts.models import User
 from .forms import ItemForm
+from django.contrib.auth.decorators import login_required
+from accounts.models import Coupon, User
+import random
+
 
 def main(request):
     items = Item.objects.all()
@@ -79,21 +83,42 @@ def checkout(request):
     user = get_object_or_404(User, user_id=user_id)
     cart_items = ItemsInCart.objects.filter(user=user)
     if not cart_items: return redirect('store:cart')
+
     total_price = sum(item.item.price * item.amount for item in cart_items)
-    context = {'user': user, 'cart_items': cart_items, 'total_price': total_price}
+    coupons = Coupon.objects.filter(user=user)
+
+    context = {
+        'user': user,
+        'cart_items': cart_items,
+        'total_price': total_price,
+        'coupons': coupons,
+    }
     return render(request, 'store/checkout.html', context)
 
 def checkoutCommit(request):
     user_id = request.session.get('login_user_id')
     if not user_id: return redirect('accounts:login')
     if request.method != 'POST': return redirect('store:cart')
+
     destination = request.POST.get('destination')
     card_number = request.POST.get('card_number', '4242424242424242')
+    coupon_id = request.POST.get('coupon_id')  # 適用するクーポンID
     user = get_object_or_404(User, user_id=user_id)
     cart_items = ItemsInCart.objects.filter(user=user)
     if not cart_items: return redirect('store:cart')
 
     total_price = sum(c.item.price * c.amount for c in cart_items)
+
+    # クーポンを適用
+    if coupon_id:
+        coupon = get_object_or_404(Coupon, id=coupon_id, user=user)
+        if coupon.coupon_type == '20%':
+            total_price *= 0.8
+        elif coupon.coupon_type == '50%':
+            total_price *= 0.5
+        elif coupon.coupon_type == '99%':
+            total_price *= 0.01
+        total_price = int(total_price)  # 小数点以下を切り捨て
 
     # 決済APIにリクエスト
     api_base_url = os.environ.get('API_BASE_URL', 'http://15.152.44.182/api/v1')
@@ -158,6 +183,11 @@ def checkoutCommit(request):
             c_item.item.stock -= c_item.amount
             c_item.item.save()
         cart_items.delete()
+
+        # 適用したクーポンを削除
+        if coupon_id:
+            coupon.delete()
+
     return render(request, 'store/purchaseComplete.html', {'purchase': purchase})
 
 
@@ -291,3 +321,25 @@ def adminPurchaseCancel(request, purchase_id):
                     detail.item.save()
 
     return redirect('store:adminPurchaseList')
+
+
+from django.shortcuts import render, redirect, get_object_or_404
+from accounts.models import Coupon, User  # 独自のUserモデルをインポート
+import random
+
+def coupon_view(request):
+    user_id = request.session.get('login_user_id')
+    if not user_id: 
+        return redirect('accounts:login')
+
+    user = get_object_or_404(User, user_id=user_id)
+
+    existing_coupons = Coupon.objects.filter(user=user)
+
+    if existing_coupons.count() >= 3:
+        return render(request, 'store/coupon.html', {'message': 'You already have 3 coupons!'})
+
+    coupon_type = random.choice(['20%', '50%', '99%'])
+    Coupon.objects.create(user=user, coupon_type=coupon_type)
+
+    return render(request, 'store/coupon.html', {'message': f'You received a {coupon_type} coupon!'})

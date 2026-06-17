@@ -25,4 +25,7 @@ urlpatterns = [
     # 追加：注文履歴とキャンセル機能
     path('admin_main/purchase/', views.adminPurchaseList, name='adminPurchaseList'),
     path('admin_main/purchase/cancel/<int:purchase_id>/', views.adminPurchaseCancel, name='adminPurchaseCancel'),
+    
+    path('coupon/', views.coupon_view, name='coupon'),
+
 ]
