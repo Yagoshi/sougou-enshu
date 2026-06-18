@@ -30,5 +30,7 @@ urlpatterns = [
 
 
     path('items/<int:item_id>/chat/', views.itemChat, name='itemChat'),
+    path('support/chat/', views.supportChat, name='supportChat'),
     path("item/<int:item_id>/review/", views.add_review, name="add_review"),
+    
 ]
