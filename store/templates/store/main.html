@@ -24,6 +24,12 @@
 .rating-star { color: #f5a623; }
 .rating-count { font-size: 10px; color: var(--text3); }
 .no-rating { font-size: 11px; color: var(--text3); }
+.hero-left {
+    background-image: url("{% static 'images/hero-bg_v3.png' %}");
+    background-size: cover;        /* 画面サイズに応じて拡大縮小 */
+    background-position: center;   /* 中央基準で表示 */
+    background-repeat: no-repeat;  /* 繰り返し防止 */
+}
 </style>
 {% endblock %}
 
@@ -48,11 +54,11 @@
 </div>
 <div class="hero">
     <div class="hero-left">
-        <div class="hero-bg-num">EC</div>
+        <!-- <div class="hero-bg-num">SALE</div> -->
         <div class="hero-content">
-            <span class="hero-eyebrow">SOUGOU STORE</span>
+            <!-- <span class="hero-eyebrow">SOUGOU STORE</span> -->
             <h1 class="hero-title">こだわりの<br>商品を届ける</h1>
-            <p class="hero-desc">厳選した商品を取り揃えています。お気に入りの一品を見つけてください。</p>
+            <p class="hero-desc">厳選した商品を取り揃えています。<br>お気に入りの一品を見つけてください。</p>
             <div class="hero-cta-row">
                 <div class="hero-cta-row">
                     {% if request.session.login_user_id %}
