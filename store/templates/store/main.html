@@ -259,7 +259,7 @@
         <div class="hero-panel-bot">
             <div class="panel-cat-label">CATEGORIES</div>
             {% for cat in categories %}
-            <a href="{% url 'store:searchResult' %}?category={ cat.category_id %}">
+            <a href="{% url 'store:searchResult' %}?category={{ cat.category_id }}">
                 <div class="cat-item">
                     <div class="cat-left"><div class="cat-bullet"></div><span class="cat-name">{{ cat.name }}</span></div>
                     <span class="cat-count">→</span>
