@@ -2,6 +2,7 @@ from django.test import TestCase
 from django.urls import reverse
 from store.models import Category, Item, ItemsInCart, Purchase
 from accounts.models import User
+from unittest.mock import patch, MagicMock
 
 
 def create_test_data():
@@ -67,6 +68,8 @@ class CartViewTest(TestCase):
         self.assertFalse(ItemsInCart.objects.filter(user=self.user).exists())
 
 
+
+
 class CheckoutViewTest(TestCase):
     def setUp(self):
         _, self.item, self.user = create_test_data()
@@ -75,21 +78,37 @@ class CheckoutViewTest(TestCase):
         session.save()
         ItemsInCart.objects.create(amount=2, item=self.item, user=self.user)
 
+    def _mock_payment_success(self):
+        mock_res = MagicMock()
+        mock_res.status_code = 200
+        mock_res.json.return_value = {
+            'status': 'succeeded',
+            'transaction_id': 'test-txn-001',
+            'card_last4': '4242',
+        }
+        return mock_res
+
     def test_checkout_commit_creates_purchase(self):
-        self.client.post(reverse('store:checkoutCommit'), {
-            'destination': '東京都港区1-1-1',
-        })
+        with patch('store.views.requests.post', return_value=self._mock_payment_success()):
+            self.client.post(reverse('store:checkoutCommit'), {
+                'destination': '東京都港区1-1-1',
+                'card_number': '4242424242424242',
+            })
         self.assertTrue(Purchase.objects.filter(user=self.user).exists())
 
     def test_checkout_commit_reduces_stock(self):
-        self.client.post(reverse('store:checkoutCommit'), {
-            'destination': '東京都港区1-1-1',
-        })
+        with patch('store.views.requests.post', return_value=self._mock_payment_success()):
+            self.client.post(reverse('store:checkoutCommit'), {
+                'destination': '東京都港区1-1-1',
+                'card_number': '4242424242424242',
+            })
         self.item.refresh_from_db()
         self.assertEqual(self.item.stock, 8)
 
     def test_checkout_commit_clears_cart(self):
-        self.client.post(reverse('store:checkoutCommit'), {
-            'destination': '東京都港区1-1-1',
-        })
+        with patch('store.views.requests.post', return_value=self._mock_payment_success()):
+            self.client.post(reverse('store:checkoutCommit'), {
+                'destination': '東京都港区1-1-1',
+                'card_number': '4242424242424242',
+            })
         self.assertFalse(ItemsInCart.objects.filter(user=self.user).exists())
