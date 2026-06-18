@@ -236,14 +236,23 @@
     </div>
     <div class="hero-right">
         {% with featured=items|first %}
-        <div class="hero-panel-top">
+        <div class="hero-panel-top {% if featured.image %}has-image{% endif %}"
+            {% if featured.image %}
+            style="background-image: url('{{ featured.image.url }}');"
+            {% endif %}>
+
             <div class="panel-label">PICKUP ITEM</div>
+
             {% if featured %}
-            <div>
-                <div class="panel-price">¥{{ featured.price }}</div>
-                <div class="panel-name">{{ featured.name }}</div>
-            </div>
-            <div class="panel-stock"><div class="panel-stock-dot"></div>在庫 {{ featured.stock }}個</div>
+                <div>
+                    <div class="panel-price">¥{{ featured.price }}</div>
+                    <div class="panel-name">{{ featured.name }}</div>
+                </div>
+
+                <div class="panel-stock">
+                    <div class="panel-stock-dot"></div>
+                    在庫 {{ featured.stock }}個
+                </div>
             {% endif %}
         </div>
         {% endwith %}
@@ -346,7 +355,7 @@
 </div>
 
 <!-- フローティングチャットボット -->
-<button class="fc-btn" id="fcBtn" title="商品サポート">🛍️</button>
+<button class="fc-btn" id="fcBtn" title="商品サポート">🤖</button>
 
 <div class="fc-panel" id="fcPanel">
     <div class="fc-header">
