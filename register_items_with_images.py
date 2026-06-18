@@ -1,5 +1,5 @@
 """
-既存の画像ファイルを使って商品をDBに一括登録するスクリプト
+カテゴリ登録・既存商品クリア・画像付き商品の一括登録を行うスクリプト
 （Gemini API不要・画像生成なし）
 
 使い方:
@@ -7,11 +7,9 @@
 
 前提:
     - media/items/ に画像ファイルが存在すること
-    - seed.py でカテゴリ（1〜5）が登録済みであること
 """
 
 import os
-import re
 import sys
 import django
 from pathlib import Path
@@ -24,6 +22,17 @@ os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'shop01.settings')
 django.setup()
 
 from store.models import Category, Item
+
+# ══════════════════════════════════════════════
+# カテゴリデータ
+# ══════════════════════════════════════════════
+CATEGORIES_DATA = [
+    (1, "鞄"),
+    (2, "帽子"),
+    (3, "衣類"),
+    (4, "シューズ"),
+    (5, "アクセサリー"),
+]
 
 # ══════════════════════════════════════════════
 # generate_items.py の商品データ（80件, ID: 200〜279）
@@ -168,71 +177,71 @@ def main():
         print("❌ media/items/ ディレクトリが見つかりません")
         return
 
-    # 全商品データを結合（80件 + 20件 = 100件）
+    # ── Step 1: カテゴリを登録 ──
+    print("=" * 60)
+    print("Step 1: カテゴリ登録")
+    print("=" * 60)
+    for category_id, name in CATEGORIES_DATA:
+        obj, created = Category.objects.update_or_create(
+            category_id=category_id,
+            defaults={"name": name},
+        )
+        status = "新規作成" if created else "既存"
+        print(f"  [{category_id}] {status}: {name}")
+
+    # ── Step 2: 既存商品をすべてクリア ──
+    print()
+    print("=" * 60)
+    print("Step 2: 既存商品をクリア")
+    print("=" * 60)
+    deleted_count, _ = Item.objects.all().delete()
+    print(f"  🗑️  {deleted_count}件削除しました")
+
+    # ── Step 3: 商品＋画像を一括登録 ──
+    print()
+    print("=" * 60)
+    print("Step 3: 画像付き商品を登録")
+    print("=" * 60)
+
     all_items = [(200 + i, *data) for i, data in enumerate(ITEMS_DATA)]
     all_items += [(280 + i, *data) for i, data in enumerate(COLORFUL_ITEMS)]
 
-    print("=" * 60)
-    print("商品データ＋画像 一括登録スクリプト（API不要）")
-    print(f"登録予定: {len(all_items)}件")
-    print("=" * 60)
-
     created_count = 0
-    updated_count = 0
     image_linked = 0
-    error_count = 0
+    no_image_count = 0
 
     for item_id, name, manufacturer, color, price, stock, recommended, cat_id in all_items:
-        try:
-            category = Category.objects.get(category_id=cat_id)
-        except Category.DoesNotExist:
-            print(f"  ❌ カテゴリID {cat_id} が未登録。スキップ: {name}")
-            error_count += 1
-            continue
+        category = Category.objects.get(category_id=cat_id)
 
-        # 画像ファイルを検索
         image_filename = find_image_for_id(item_id, media_items_dir)
         image_path = f"items/{image_filename}" if image_filename else ""
 
-        obj, created = Item.objects.update_or_create(
+        Item.objects.create(
             item_id=item_id,
-            defaults={
-                "name": name,
-                "manufacturer": manufacturer,
-                "color": color,
-                "price": price,
-                "stock": stock,
-                "recommended": recommended,
-                "category": category,
-                "image": image_path,
-            },
+            name=name,
+            manufacturer=manufacturer,
+            color=color,
+            price=price,
+            stock=stock,
+            recommended=recommended,
+            category=category,
+            image=image_path,
         )
 
-        status = "新規作成" if created else "更新"
-        img_status = f"📷 {image_filename}" if image_filename else "⚠️ 画像なし"
-
-        if created:
-            created_count += 1
-        else:
-            updated_count += 1
-
+        created_count += 1
         if image_filename:
             image_linked += 1
-
-        print(f"  [{item_id}] {status}: {name}  {img_status}")
+            print(f"  [{item_id}] ✅ {name}  📷 {image_filename}")
+        else:
+            no_image_count += 1
+            print(f"  [{item_id}] ✅ {name}  ⚠️ 画像なし")
 
     print()
     print("=" * 60)
-    print(f"✅ 新規作成: {created_count}件")
-    print(f"🔄 更新:     {updated_count}件")
-    print(f"📷 画像紐づけ: {image_linked}件")
-    print(f"❌ エラー:   {error_count}件")
+    print(f"✅ 登録完了:   {created_count}件")
+    print(f"📷 画像あり:   {image_linked}件")
+    print(f"⚠️  画像なし:   {no_image_count}件")
     print("=" * 60)
-
-    if error_count > 0:
-        print()
-        print("⚠️  カテゴリが未登録の場合は、先に以下を実行してください:")
-        print("    python manage.py seed")
 
 
 if __name__ == '__main__':
