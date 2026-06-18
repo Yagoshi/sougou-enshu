@@ -61,6 +61,40 @@ a { color: inherit; text-decoration: none; }
 .hero-cta-row { display: flex; gap: 10px; align-items: center; margin-top: 4px; }
 .hero-right { display: grid; grid-template-rows: 1fr 1fr; }
 .hero-panel-top { background: var(--ac); padding: 28px; border-bottom: 1px solid rgba(255,255,255,0.12); display: flex; flex-direction: column; justify-content: space-between; gap: 10px; }
+.hero-panel-top.has-image {
+  position: relative;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+.hero-panel-top.has-image::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: rgba(0,0,0,0.45); /* ← 好みで 0.3〜0.6 */
+}
+.hero-panel-top > * {
+  position: relative;
+  z-index: 1;
+}
+.hero-panel-top img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;   /* ←縦横比維持＋トリミング */
+}
+.pickup-img {
+  width: 100%;
+  height: 120px;        /* お好みで調整 */
+  overflow: hidden;
+  border-radius: 6px;
+  margin-bottom: 10px;
+}
+
+.pickup-img img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;    /* ←重要 */
+}
 .panel-label { font-size: 9px; letter-spacing: 0.22em; color: var(--ac-text); opacity: 0.6; }
 .panel-price { font-size: 30px; font-weight: 700; color: var(--ac-text); letter-spacing: -0.02em; line-height: 1; }
 .panel-name { font-size: 11px; color: var(--ac-text); opacity: 0.75; margin-top: 3px; line-height: 1.5; }
