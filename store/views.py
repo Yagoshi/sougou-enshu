@@ -30,6 +30,10 @@ def main(request):
         'min_price': price_min,
         'max_price': price_max,
     }
+    if request.session.get('login_user_id', None):
+        user_id = request.session.get('login_user_id', None)
+        user = User.objects.get(user_id=user_id)
+        context["user"] = user
     return render(request, 'store/main.html', context)
 
 def searchResult(request):

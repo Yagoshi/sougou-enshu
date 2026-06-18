@@ -34,7 +34,7 @@
 
         <div>
             {% if request.session.login_user_id %}
-                <div class="login-state-title">{{ request.session.login_user_id }}さん、こんにちは</div>
+                <div class="login-state-title">{{ user.name }}さん、こんにちは</div>
             {% else %}
                 <div class="login-state-title">未ログイン</div>
                 <div class="login-state-desc">
