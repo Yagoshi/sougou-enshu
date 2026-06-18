@@ -4,25 +4,206 @@
 {% block title %}会員情報更新 | SOUGOU STORE{% endblock %}
 
 {% block content %}
-<div class="form-wrap">
-    <h2 class="form-title">会員情報の更新</h2>
-
-    <form method="POST" style="display:flex; flex-direction:column; gap:14px;">
-        {% csrf_token %}
-        {% for field in form %}
-        <div class="form-group">
-            <label class="form-label">{{ field.label }}</label>
-            {{ field }}
-            {% if field.errors %}
-            <p style="color:#c0392b; font-size:12px; margin-top:4px;">{{ field.errors|join:", " }}</p>
-            {% endif %}
+<div class="account-update-page">
+    <div class="account-update-card">
+        <div class="account-update-header">
+            <span class="account-update-eyebrow">ACCOUNT SETTINGS</span>
+            <h2 class="account-update-title">会員情報の更新</h2>
+            <p class="account-update-desc">
+                名前・住所・パスワードを変更できます。パスワードを変更しない場合は空欄のまま進んでください。
+            </p>
         </div>
-        {% endfor %}
-        <button type="submit" class="btn-primary" style="width:100%; padding:12px;">確認画面へ</button>
-    </form>
 
-    <div class="form-links">
-        <a href="{% url 'accounts:userInfo' %}" class="muted">← マイページに戻る</a>
+        <form method="POST" id="accountUpdateForm" class="account-update-form">
+            {% csrf_token %}
+
+            {% for field in form %}
+                <div class="account-field {% if field.errors %}has-error{% endif %}">
+                    <label for="{{ field.id_for_label }}" class="account-label">
+                        {{ field.label }}
+                    </label>
+
+                    <div class="account-input-wrap {% if field.name == 'new_password' or field.name == 'new_password_confirm' %}is-password{% endif %}">
+                        {{ field }}
+
+                        {% if field.name == 'new_password' or field.name == 'new_password_confirm' %}
+                            <button
+                                type="button"
+                                class="account-password-toggle"
+                                data-target="{{ field.id_for_label }}"
+                            >
+                                表示
+                            </button>
+                        {% endif %}
+                    </div>
+
+                    {% if field.name == 'new_password' %}
+                        <div class="account-password-meter">
+                            <div class="account-password-meter-fill" id="passwordMeterFill"></div>
+                        </div>
+                        <p class="account-hint" id="passwordHint">
+                            8文字以上・英数字を含めると安全です。
+                        </p>
+                    {% endif %}
+
+                    {% if field.name == 'new_password_confirm' %}
+                        <p class="account-hint" id="passwordMatchText">
+                            確認のため、もう一度入力してください。
+                        </p>
+                    {% endif %}
+
+                    {% if field.errors %}
+                        <p class="account-error">
+                            {{ field.errors|join:", " }}
+                        </p>
+                    {% endif %}
+                </div>
+            {% endfor %}
+
+            <button type="submit" class="account-submit-btn">
+                確認画面へ
+            </button>
+        </form>
+
+        <div class="account-update-links">
+            <a href="{% url 'accounts:userInfo' %}">
+                ← マイページに戻る
+            </a>
+        </div>
     </div>
 </div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    const passwordInput = document.getElementById("id_new_password");
+    const confirmInput = document.getElementById("id_new_password_confirm");
+    const meterFill = document.getElementById("passwordMeterFill");
+    const passwordHint = document.getElementById("passwordHint");
+    const matchText = document.getElementById("passwordMatchText");
+    const form = document.getElementById("accountUpdateForm");
+
+    if (!passwordInput || !confirmInput) {
+        return;
+    }
+
+    document.querySelectorAll(".account-password-toggle").forEach(button => {
+        button.addEventListener("click", function () {
+            const targetId = this.dataset.target;
+            const target = document.getElementById(targetId);
+
+            if (!target) return;
+
+            if (target.type === "password") {
+                target.type = "text";
+                this.textContent = "非表示";
+            } else {
+                target.type = "password";
+                this.textContent = "表示";
+            }
+        });
+    });
+
+    function checkPasswordStrength(password) {
+    const hasMinLength = password.length >= 8;
+    const hasUpper = /[A-Z]/.test(password);
+    const hasLower = /[a-z]/.test(password);
+    const hasNumber = /[0-9]/.test(password);
+    const hasSymbol = /[^a-zA-Z0-9]/.test(password);
+
+    if (!password) {
+        return 0;
+    }
+
+    if (hasMinLength && hasUpper && hasLower && hasNumber && hasSymbol) {
+        return 3; // 強い
+    }
+
+    const passedCount = [
+        hasMinLength,
+        hasUpper,
+        hasLower,
+        hasNumber,
+        hasSymbol
+    ].filter(Boolean).length;
+
+    if (passedCount >= 3) {
+        return 2; // 普通
+    }
+
+    return 1; // 弱い
+}
+
+function updatePasswordMeter() {
+    const password = passwordInput.value;
+    const score = checkPasswordStrength(password);
+
+    meterFill.classList.remove("level-1", "level-2", "level-3");
+    passwordHint.classList.remove("is-ok", "is-error");
+
+    if (!password) {
+        meterFill.style.width = "0%";
+        passwordHint.textContent = "8文字以上・大文字・小文字・数字・特殊文字を含めると強いです。";
+        return;
+    }
+
+    meterFill.style.width = "";
+
+    if (score === 1) {
+        meterFill.classList.add("level-1");
+        passwordHint.textContent = "パスワード強度：弱い";
+        passwordHint.classList.add("is-error");
+    } else if (score === 2) {
+        meterFill.classList.add("level-2");
+        passwordHint.textContent = "パスワード強度：普通";
+    } else if (score === 3) {
+        meterFill.classList.add("level-3");
+        passwordHint.textContent = "パスワード強度：強い";
+        passwordHint.classList.add("is-ok");
+    }
+}
+
+    function checkPasswordMatch() {
+        const password = passwordInput.value;
+        const confirm = confirmInput.value;
+
+        matchText.classList.remove("is-ok", "is-error");
+
+        if (!password && !confirm) {
+            matchText.textContent = "確認のため、もう一度入力してください。";
+            return true;
+        }
+
+        if (password && !confirm) {
+            matchText.textContent = "確認用パスワードを入力してください。";
+            matchText.classList.add("is-error");
+            return false;
+        }
+
+        if (password !== confirm) {
+            matchText.textContent = "パスワードが一致していません。";
+            matchText.classList.add("is-error");
+            return false;
+        }
+
+        matchText.textContent = "パスワードが一致しています。";
+        matchText.classList.add("is-ok");
+        return true;
+    }
+
+    passwordInput.addEventListener("input", function () {
+        updatePasswordMeter();
+        checkPasswordMatch();
+    });
+
+    confirmInput.addEventListener("input", checkPasswordMatch);
+
+    form.addEventListener("submit", function (event) {
+        if (!checkPasswordMatch()) {
+            event.preventDefault();
+        }
+    });
+});
+</script>
 {% endblock %}
