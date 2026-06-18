@@ -131,6 +131,63 @@
 .rating-star { color: #f5a623; }
 .rating-count { font-size: 10px; color: var(--text3); }
 .no-rating { font-size: 11px; color: var(--text3); }
+
+/* ── フローティングチャット ───────────────── */
+.fc-btn {
+    position: fixed; bottom: 28px; right: 28px; z-index: 1000;
+    width: 56px; height: 56px; border-radius: 50%;
+    background: var(--ac); color: var(--ac-text);
+    border: none; cursor: pointer; font-size: 24px;
+    box-shadow: 0 4px 20px rgba(45,106,79,0.4);
+    display: flex; align-items: center; justify-content: center;
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+.fc-btn:hover { transform: scale(1.08); box-shadow: 0 6px 24px rgba(45,106,79,0.5); }
+.fc-panel {
+    position: fixed; bottom: 96px; right: 28px; z-index: 1000;
+    width: 340px; background: var(--bg);
+    border: 1px solid var(--border); border-radius: var(--radius-lg);
+    box-shadow: 0 8px 32px rgba(0,0,0,0.12);
+    display: flex; flex-direction: column;
+    transform: scale(0.9) translateY(10px);
+    opacity: 0; pointer-events: none;
+    transition: transform 0.2s cubic-bezier(0.34,1.56,0.64,1), opacity 0.15s;
+    max-height: 480px;
+}
+.fc-panel.open { transform: scale(1) translateY(0); opacity: 1; pointer-events: auto; }
+.fc-header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 14px 16px; border-bottom: 1px solid var(--border);
+    background: var(--ac); border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+}
+.fc-header-title { font-size: 13px; font-weight: 500; color: var(--ac-text); display: flex; align-items: center; gap: 8px; }
+.fc-close { background: none; border: none; color: var(--ac-text); font-size: 18px; cursor: pointer; opacity: 0.7; padding: 0; line-height: 1; }
+.fc-close:hover { opacity: 1; }
+.fc-messages { flex: 1; overflow-y: auto; padding: 14px 14px 8px; display: flex; flex-direction: column; gap: 10px; min-height: 200px; }
+.fc-msg { display: flex; gap: 8px; align-items: flex-start; }
+.fc-msg-bot { flex-direction: row; }
+.fc-msg-user { flex-direction: row-reverse; }
+.fc-avatar { width: 28px; height: 28px; border-radius: 50%; background: var(--ac-sub); display: flex; align-items: center; justify-content: center; font-size: 14px; flex-shrink: 0; }
+.fc-bubble { max-width: 230px; padding: 8px 12px; border-radius: var(--radius-lg); font-size: 12px; line-height: 1.7; word-break: break-word; }
+.fc-bubble-bot { background: var(--bg2); color: var(--text); border-radius: 2px var(--radius-lg) var(--radius-lg) var(--radius-lg); }
+.fc-bubble-user { background: var(--ac); color: var(--ac-text); border-radius: var(--radius-lg) 2px var(--radius-lg) var(--radius-lg); }
+.fc-typing { display: flex; gap: 4px; align-items: center; padding: 8px 12px; }
+.fc-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--text3); animation: fc-bounce 1.2s infinite; }
+.fc-dot:nth-child(2) { animation-delay: 0.2s; }
+.fc-dot:nth-child(3) { animation-delay: 0.4s; }
+@keyframes fc-bounce { 0%,80%,100%{transform:translateY(0)} 40%{transform:translateY(-6px)} }
+.fc-input-row { display: flex; gap: 8px; padding: 10px 12px; border-top: 1px solid var(--border); }
+.fc-input { flex: 1; padding: 8px 12px; border: 1px solid var(--border2); border-radius: 999px; font-size: 12px; font-family: 'Noto Sans JP', sans-serif; background: var(--bg); color: var(--text); outline: none; }
+.fc-input:focus { border-color: var(--ac); }
+.fc-send { width: 34px; height: 34px; border-radius: 50%; background: var(--ac); color: var(--ac-text); border: none; cursor: pointer; font-size: 14px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; transition: opacity 0.15s; }
+.fc-send:hover { opacity: 0.85; }
+.hero-left {
+    background-image: url("{% static 'images/hero-bg_v3.png' %}");
+    background-size: cover;        /* 画面サイズに応じて拡大縮小 */
+    background-position: center;   /* 中央基準で表示 */
+    background-repeat: no-repeat;  /* 繰り返し防止 */
+}
+
 </style>
 {% endblock %}
 
@@ -138,15 +195,12 @@
 <div class="login-state-card {% if request.session.login_user_id %}is-logged-in{% else %}is-guest{% endif %}">
     <div class="login-state-left">
         <span class="login-state-dot"></span>
-
         <div>
             {% if request.session.login_user_id %}
                 <div class="login-state-title">{{ user.name }}さん、こんにちは</div>
             {% else %}
                 <div class="login-state-title">未ログイン</div>
-                <div class="login-state-desc">
-                    商品の閲覧はできます。購入・レビュー投稿にはログインが必要です。
-                </div>
+                <div class="login-state-desc">商品の閲覧はできます。購入・レビュー投稿にはログインが必要です。</div>
             {% endif %}
         </div>
     </div>
@@ -167,25 +221,16 @@
             </div>
         </div>
         <div class="hero-content">
-            <span class="hero-eyebrow">SOUGOU STORE</span>
+            <!-- <span class="hero-eyebrow">SOUGOU STORE</span> -->
             <h1 class="hero-title">こだわりの<br>商品を届ける</h1>
-            <p class="hero-desc">厳選した商品を取り揃えています。お気に入りの一品を見つけてください。</p>
+            <p class="hero-desc">厳選した商品を取り揃えています。<br>お気に入りの一品を見つけてください。</p>
             <div class="hero-cta-row">
-                <div class="hero-cta-row">
-                    {% if request.session.login_user_id %}
-                        <a href="{% url 'store:cart' %}">
-                            <button class="btn-primary">カートを見る</button>
-                        </a>
-                    {% else %}
-                    <a href="{% url 'accounts:login' %}">
-                        <button class="btn-primary btn-login-outline">ログイン</button>
-                    </a>
-                    
-                    <a href="{% url 'accounts:registerUser' %}">
-                        <button class="btn-primary">会員登録</button>
-                    </a>
-                    {% endif %}
-                </div>
+                {% if request.session.login_user_id %}
+                    <a href="{% url 'store:cart' %}"><button class="btn-primary">カートを見る</button></a>
+                {% else %}
+                    <a href="{% url 'accounts:login' %}"><button class="btn-primary btn-login-outline">ログイン</button></a>
+                    <a href="{% url 'accounts:registerUser' %}"><button class="btn-primary">会員登録</button></a>
+                {% endif %}
             </div>
         </div>
     </div>
@@ -205,7 +250,7 @@
         <div class="hero-panel-bot">
             <div class="panel-cat-label">CATEGORIES</div>
             {% for cat in categories %}
-            <a href="{% url 'store:searchResult' %}?category={{ cat.category_id }}">
+            <a href="{% url 'store:searchResult' %}?category={ cat.category_id %}">
                 <div class="cat-item">
                     <div class="cat-left"><div class="cat-bullet"></div><span class="cat-name">{{ cat.name }}</span></div>
                     <span class="cat-count">→</span>
@@ -221,29 +266,25 @@
         <span class="section-title">ALL ITEMS</span>
     </div>
 
-    <!-- 検索フォーム -->
     <form id="searchForm" action="{% url 'store:searchResult' %}" method="GET"
-          style="display: flex; gap: 16px; align-items: flex-start; flex-wrap: wrap; margin-bottom: 20px; padding: 20px; background: var(--bg2); border-radius: var(--radius-lg);">
-
-        <div style="display: flex; flex-direction: column; gap: 6px; flex: 1; min-width: 160px;">
-            <label style="font-size: 11px; color: var(--text3); letter-spacing: 0.1em;">キーワード</label>
+          style="display:flex;gap:16px;align-items:flex-start;flex-wrap:wrap;margin-bottom:20px;padding:20px;background:var(--bg2);border-radius:var(--radius-lg);">
+        <div style="display:flex;flex-direction:column;gap:6px;flex:1;min-width:160px;">
+            <label style="font-size:11px;color:var(--text3);letter-spacing:0.1em;">キーワード</label>
             <input type="text" name="keyword" placeholder="商品名で検索"
-                style="padding: 8px 12px; border: 1px solid var(--border2); border-radius: var(--radius); font-size: 12px; font-family: 'Noto Sans JP', sans-serif; background: var(--bg); color: var(--text); outline: none;">
+                style="padding:8px 12px;border:1px solid var(--border2);border-radius:var(--radius);font-size:12px;font-family:'Noto Sans JP',sans-serif;background:var(--bg);color:var(--text);outline:none;">
         </div>
-
-        <div style="display: flex; flex-direction: column; gap: 6px; min-width: 140px;">
-            <label style="font-size: 11px; color: var(--text3); letter-spacing: 0.1em;">カテゴリ</label>
+        <div style="display:flex;flex-direction:column;gap:6px;min-width:140px;">
+            <label style="font-size:11px;color:var(--text3);letter-spacing:0.1em;">カテゴリ</label>
             <select name="category"
-                style="padding: 8px 12px; border: 1px solid var(--border2); border-radius: var(--radius); font-size: 12px; font-family: 'Noto Sans JP', sans-serif; color: var(--text2); background: var(--bg);">
+                style="padding:8px 12px;border:1px solid var(--border2);border-radius:var(--radius);font-size:12px;font-family:'Noto Sans JP',sans-serif;color:var(--text2);background:var(--bg);">
                 <option value="">すべて</option>
                 {% for cat in categories %}
                     <option value="{{ cat.category_id }}">{{ cat.name }}</option>
                 {% endfor %}
             </select>
         </div>
-
-        <div style="display: flex; flex-direction: column; gap: 6px; min-width: 220px;">
-            <label style="font-size: 11px; color: var(--text3); letter-spacing: 0.1em;">価格帯</label>
+        <div style="display:flex;flex-direction:column;gap:6px;min-width:220px;">
+            <label style="font-size:11px;color:var(--text3);letter-spacing:0.1em;">価格帯</label>
             <div class="price-filter">
                 <div class="price-display">
                     <div class="price-box">¥<span id="minPriceLabel">{{ min_price }}</span></div>
@@ -260,15 +301,13 @@
                 <input type="hidden" name="max_price" id="maxPriceInput" value="{{ max_price }}">
             </div>
         </div>
-
-        <div style="display: flex; align-items: flex-end; padding-bottom: 2px;">
-            <button type="submit" class="btn-primary" style="padding: 8px 16px;">検索</button>
+        <div style="display:flex;align-items:flex-end;padding-bottom:2px;">
+            <button type="submit" class="btn-primary" style="padding:8px 16px;">検索</button>
         </div>
     </form>
 
-    <!-- 並べ替えバー -->
     <div class="sort-bar">
-        <span style="font-size: 11px; color: var(--text3); margin-right: 4px;">並べ替え：</span>
+        <span style="font-size:11px;color:var(--text3);margin-right:4px;">並べ替え：</span>
         <button class="sort-btn active" data-sort="default">おすすめ順</button>
         <button class="sort-btn" data-sort="price-asc">価格が安い順</button>
         <button class="sort-btn" data-sort="price-desc">価格が高い順</button>
@@ -276,25 +315,22 @@
         <button class="sort-btn" data-sort="review-desc">レビューが多い順</button>
     </div>
 
-    <!-- 商品グリッド -->
     <div class="product-grid" id="productGrid">
         {% for item in items %}
         <a href="{% url 'store:itemDetail' item.item_id %}" class="product-card"
-           data-price="{{ item.price }}"
-           data-rating="{{ item.avg_rating|default:0 }}"
-           data-review="{{ item.review_count|default:0 }}"
-           data-recommended="{% if item.recommended %}1{% else %}0{% endif %}">
+           data-price="{{ item.price }}" data-rating="{{ item.avg_rating|default:0 }}"
+           data-review="{{ item.review_count|default:0 }}" data-recommended="{% if item.recommended %}1{% else %}0{% endif %}">
             <div class="product-img">
                 {% if item.recommended %}<span class="badge-new">PICK</span>{% endif %}
                 {% if item.image %}
-                    <img src="{{ item.image.url }}" alt="{{ item.name }}" style="width:100%; height:100%; object-fit:cover;">
+                    <img src="{{ item.image.url }}" alt="{{ item.name }}" style="width:100%;height:100%;object-fit:cover;">
                 {% else %}
-                    <span style="font-size: 40px;">🛍️</span>
+                    <span style="font-size:40px;">🛍️</span>
                 {% endif %}
             </div>
             <div class="product-name">{{ item.name }}</div>
             <div class="product-price">¥{{ item.price }}<span class="product-tax">（税込）</span></div>
-            <div style="margin-top: 4px; font-size: 11px;">
+            <div style="margin-top:4px;font-size:11px;">
                 {% if item.avg_rating %}
                     <span class="rating-star">★</span> {{ item.avg_rating|floatformat:1 }}
                     <span class="rating-count">({{ item.review_count }}件)</span>
@@ -304,8 +340,28 @@
             </div>
         </a>
         {% empty %}
-        <p style="color: var(--text2); font-size: 13px; grid-column: 1/-1;">商品が登録されていません。</p>
+        <p style="color:var(--text2);font-size:13px;grid-column:1/-1;">商品が登録されていません。</p>
         {% endfor %}
+    </div>
+</div>
+
+<!-- フローティングチャットボット -->
+<button class="fc-btn" id="fcBtn" title="商品サポート">🛍️</button>
+
+<div class="fc-panel" id="fcPanel">
+    <div class="fc-header">
+        <div class="fc-header-title"><span>🤖</span><span>商品サポート</span></div>
+        <button class="fc-close" id="fcClose">✕</button>
+    </div>
+    <div class="fc-messages" id="fcMessages">
+        <div class="fc-msg fc-msg-bot">
+            <div class="fc-avatar">🤖</div>
+            <div class="fc-bubble fc-bubble-bot">こんにちは！お探しの商品はありますか？ご要望をお聞かせください。例：「黒いバッグが欲しい」「5000円以内のシューズは？」</div>
+        </div>
+    </div>
+    <div class="fc-input-row">
+        <input type="text" class="fc-input" id="fcInput" placeholder="例：黒いバッグが欲しい">
+        <button class="fc-send" id="fcSend">➤</button>
     </div>
 </div>
 {% endblock %}
@@ -376,7 +432,6 @@ function updateSlider() {
     rangeFill.style.left  = pct(lo) + '%';
     rangeFill.style.width = (pct(hi) - pct(lo)) + '%';
 }
-
 minRange.addEventListener("input", updateSlider);
 maxRange.addEventListener("input", updateSlider);
 updateSlider();
@@ -384,24 +439,99 @@ updateSlider();
 // ── 並べ替え ──
 const grid = document.getElementById("productGrid");
 const cards = Array.from(grid.querySelectorAll(".product-card"));
-
 document.querySelectorAll(".sort-btn").forEach(btn => {
     btn.addEventListener("click", () => {
         document.querySelectorAll(".sort-btn").forEach(b => b.classList.remove("active"));
         btn.classList.add("active");
-
         const sort = btn.dataset.sort;
         const sorted = [...cards].sort((a, b) => {
-            if (sort === "price-asc")    return parseFloat(a.dataset.price) - parseFloat(b.dataset.price);
-            if (sort === "price-desc")   return parseFloat(b.dataset.price) - parseFloat(a.dataset.price);
-            if (sort === "rating-desc")  return parseFloat(b.dataset.rating) - parseFloat(a.dataset.rating);
-            if (sort === "review-desc")  return parseFloat(b.dataset.review) - parseFloat(a.dataset.review);
-            // default: おすすめ順（recommended=1を先に）
+            if (sort === "price-asc")   return parseFloat(a.dataset.price) - parseFloat(b.dataset.price);
+            if (sort === "price-desc")  return parseFloat(b.dataset.price) - parseFloat(a.dataset.price);
+            if (sort === "rating-desc") return parseFloat(b.dataset.rating) - parseFloat(a.dataset.rating);
+            if (sort === "review-desc") return parseFloat(b.dataset.review) - parseFloat(a.dataset.review);
             return parseInt(b.dataset.recommended) - parseInt(a.dataset.recommended);
         });
-
         sorted.forEach(card => grid.appendChild(card));
     });
 });
+
+// ── フローティングチャットボット ──
+const fcBtn = document.getElementById('fcBtn');
+const fcPanel = document.getElementById('fcPanel');
+const fcClose = document.getElementById('fcClose');
+const fcMessages = document.getElementById('fcMessages');
+const fcInput = document.getElementById('fcInput');
+const fcSend = document.getElementById('fcSend');
+
+fcBtn.addEventListener('click', () => {
+    fcPanel.classList.toggle('open');
+    if (fcPanel.classList.contains('open')) fcInput.focus();
+});
+fcClose.addEventListener('click', () => fcPanel.classList.remove('open'));
+
+function formatBotText(text) {
+    const lines = text.split('\n');
+    let html = '';
+    let inList = false;
+    for (const line of lines) {
+        const trimmed = line.trim();
+        if (!trimmed) continue;
+        if (/^[\u2022\-\u30fb\*]/.test(trimmed)) {
+            if (!inList) { html += '<ul style="margin:6px 0 2px 0;padding-left:14px;list-style:disc;">'; inList = true; }
+            html += '<li style="margin-bottom:4px;">' + trimmed.replace(/^[\u2022\-\u30fb\*]\s*/, '') + '</li>';
+        } else {
+            if (inList) { html += '</ul>'; inList = false; }
+            html += '<p style="margin:0 0 6px 0;">' + trimmed + '</p>';
+        }
+    }
+    if (inList) html += '</ul>';
+    return html;
+}
+
+function addMessage(text, isUser) {
+    const msg = document.createElement('div');
+    msg.className = `fc-msg ${isUser ? 'fc-msg-user' : 'fc-msg-bot'}`;
+    msg.innerHTML = isUser
+        ? `<div class="fc-bubble fc-bubble-user">${text}</div><div class="fc-avatar">🙋</div>`
+        : `<div class="fc-avatar">🤖</div><div class="fc-bubble fc-bubble-bot">${formatBotText(text)}</div>`;
+    fcMessages.appendChild(msg);
+    fcMessages.scrollTop = fcMessages.scrollHeight;
+}
+
+function showTyping() {
+    const t = document.createElement('div');
+    t.className = 'fc-msg fc-msg-bot'; t.id = 'fcTyping';
+    t.innerHTML = `<div class="fc-avatar">🤖</div><div class="fc-bubble fc-bubble-bot fc-typing"><div class="fc-dot"></div><div class="fc-dot"></div><div class="fc-dot"></div></div>`;
+    fcMessages.appendChild(t);
+    fcMessages.scrollTop = fcMessages.scrollHeight;
+}
+function removeTyping() { const t = document.getElementById('fcTyping'); if (t) t.remove(); }
+
+async function sendMessage() {
+    const text = fcInput.value.trim();
+    if (!text) return;
+    fcInput.value = '';
+    fcSend.disabled = true;
+    addMessage(text, true);
+    showTyping();
+    try {
+        const res = await fetch("{% url 'store:supportChat' %}", {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'X-CSRFToken': '{{ csrf_token }}' },
+            body: JSON.stringify({ message: text }),
+        });
+        const data = await res.json();
+        removeTyping();
+        addMessage(data.reply, false);
+    } catch {
+        removeTyping();
+        addMessage('通信エラーが発生しました。再度お試しください。', false);
+    }
+    fcSend.disabled = false;
+    fcInput.focus();
+}
+
+fcSend.addEventListener('click', sendMessage);
+fcInput.addEventListener('keydown', e => { if (e.key === 'Enter') sendMessage(); });
 </script>
 {% endblock %}

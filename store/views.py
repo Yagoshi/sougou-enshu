@@ -17,23 +17,33 @@ from .forms import ReviewForm
 
 def main(request):
     from django.db.models import Avg, Count, Min, Max
+
     items = Item.objects.annotate(
         avg_rating=Avg('reviews__rating'),
         review_count=Count('reviews')
     )
+
     categories = Category.objects.all()
     price_min = Item.objects.aggregate(Min('price'))['price__min'] or 0
     price_max = Item.objects.aggregate(Max('price'))['price__max'] or 100000
+
     context = {
         'items': items,
         'categories': categories,
         'min_price': price_min,
         'max_price': price_max,
     }
-    if request.session.get('login_user_id', None):
-        user_id = request.session.get('login_user_id', None)
-        user = User.objects.get(user_id=user_id)
-        context["user"] = user
+
+    user_id = request.session.get('login_user_id')
+
+    if user_id:
+        user = User.objects.filter(user_id=user_id).first()
+
+        if user:
+            context["user"] = user
+        else:
+            request.session.flush()
+
     return render(request, 'store/main.html', context)
 
 def searchResult(request):
@@ -520,3 +530,68 @@ def add_review(request, item_id):
             )
 
     return redirect("store:itemDetail", item_id=item.item_id)
+
+import json
+from django.http import JsonResponse
+from django.views.decorators.http import require_POST
+
+# メインページ サポートチャットボット
+@require_POST
+def supportChat(request):
+    try:
+        data = json.loads(request.body)
+        user_message = data.get('message', '').strip()
+    except Exception:
+        return JsonResponse({'reply': 'メッセージの形式が不正です。'}, status=400)
+
+    if not user_message:
+        return JsonResponse({'reply': 'メッセージを入力してください。'})
+
+    # 商品情報を取得してプロンプトに含める
+    items = Item.objects.select_related('category').all()
+    categories = Category.objects.all()
+
+    item_list = '\n'.join([
+        f"- [{item.category.name}] {item.name}（{item.color}）¥{item.price} 在庫{item.stock}個"
+        + ('【おすすめ】' if item.recommended else '')
+        for item in items
+    ])
+    category_list = '・'.join([cat.name for cat in categories])
+
+    system_prompt = f"""
+あなたはECサイト「SOUGOU STORE」のサポートスタッフです。
+お客様の要望を聞いて、以下の商品リストからぴったりの商品を提案してください。
+
+【取り扱いカテゴリ】
+{category_list}
+
+【商品一覧】
+{item_list}
+
+【回答ルール】
+- 最初に一言だけ簡潔に答えてください（1文以内）
+- おすすめ商品は以下の形式で箇条書きにしてください（最大3件）：
+  • 商品名 / ¥価格 / カテゴリ
+- 商品リストにない質問（配送・返品など）には「詳細はお問い合わせください」とだけ答えてください
+- 余計な説明や締めの言葉は不要です
+- 日本語で答えてください
+"""
+
+    api_key = os.environ.get('GEMINI_API_KEY', '')
+    genai.configure(api_key=api_key)
+    model = genai.GenerativeModel('models/gemini-2.5-flash')
+
+    try:
+        response = model.generate_content(f"{system_prompt}\n\nお客様: {user_message}")
+        reply = response.text
+    except Exception:
+        reply = '申し訳ありません。現在チャットボットが利用できません。'
+
+    # try:
+    #     response = model.generate_content(f"{system_prompt}\n\nお客様: {user_message}")
+    #     reply = response.text
+    #     print(repr(reply))  # 改行文字を確認
+    # except Exception:
+    #     reply = '申し訳ありません。現在チャットボットが利用できません。'
+
+    return JsonResponse({'reply': reply})
