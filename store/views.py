@@ -17,23 +17,33 @@ from .forms import ReviewForm
 
 def main(request):
     from django.db.models import Avg, Count, Min, Max
+
     items = Item.objects.annotate(
         avg_rating=Avg('reviews__rating'),
         review_count=Count('reviews')
     )
+
     categories = Category.objects.all()
     price_min = Item.objects.aggregate(Min('price'))['price__min'] or 0
     price_max = Item.objects.aggregate(Max('price'))['price__max'] or 100000
+
     context = {
         'items': items,
         'categories': categories,
         'min_price': price_min,
         'max_price': price_max,
     }
-    if request.session.get('login_user_id', None):
-        user_id = request.session.get('login_user_id', None)
-        user = User.objects.get(user_id=user_id)
-        context["user"] = user
+
+    user_id = request.session.get('login_user_id')
+
+    if user_id:
+        user = User.objects.filter(user_id=user_id).first()
+
+        if user:
+            context["user"] = user
+        else:
+            request.session.flush()
+
     return render(request, 'store/main.html', context)
 
 def searchResult(request):
