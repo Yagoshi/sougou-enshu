@@ -5,6 +5,113 @@
 
 {% block extra_css %}
 <style>
+    
+.hero-left {
+    position: relative;
+    overflow: hidden;
+}
+
+.hero-content {
+    position: relative;
+    z-index: 2;
+}
+
+.hero-mascot {
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    pointer-events: none;
+}
+
+/* キャラ本体 */
+.hero-char {
+    position: absolute;
+    left: 28px;
+    bottom: 20px;
+    width: 26px;
+    opacity: 0.3;
+
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+
+    pointer-events: auto;
+    cursor: grab;
+
+    animation: move 6s infinite;
+}
+
+.hero-char.dragging {
+    cursor: grabbing;
+}
+
+/* 頭 */
+.hero-char-face {
+    position: absolute;
+    top: 2px;
+    right: 3px;
+    font-size: 8px;
+}
+
+.hero-char-head {
+    width: 22px;
+    height: 22px;
+    border: 2px solid var(--text);
+}
+
+/* 顔 */
+.hero-char-face::after {
+    content: "''";
+    font-size: 15px;
+}
+
+.hero-char.dragging .hero-char-face::after {
+    content: "><";
+}
+
+/* 足 */
+.hero-char-legs {
+    display: flex;
+    gap: 6px;
+    margin-top: 2px;
+}
+
+.hero-char-leg {
+    width: 3px;
+    height: 12px;
+    background: var(--text);
+    transform-origin: top;
+}
+
+.hero-char-leg-left {
+    animation: legL 0.4s infinite;
+}
+
+.hero-char-leg-right {
+    animation: legR 0.4s infinite;
+}
+
+.hero-char.dragging .hero-char-leg-left,
+.hero-char.dragging .hero-char-leg-right {
+    animation-duration: 0.1s;
+}
+
+/* 動き */
+@keyframes move {
+    0% { transform: translateX(0); }
+    50% { transform: translateX(70px); }
+    100% { transform: translateX(0); }
+}
+
+@keyframes legL {
+    0%,100% { transform: rotate(-20deg); }
+    50% { transform: rotate(20deg); }
+}
+
+@keyframes legR {
+    0%,100% { transform: rotate(20deg); }
+    50% { transform: rotate(-20deg); }
+}
 .price-filter { width: 100%; margin: 4px 0; }
 .price-display { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; }
 .price-box { background: var(--bg); border: 1px solid var(--border2); border-radius: var(--radius); padding: 6px 10px; font-size: 12px; font-weight: 500; color: var(--text); min-width: 86px; text-align: center; }
@@ -99,10 +206,20 @@
     </div>
 </div>
 
-</div>
+
 <div class="hero">
     <div class="hero-left">
-        <!-- <div class="hero-bg-num">SALE</div> -->
+        <div class="hero-mascot">
+            <div class="hero-char" id="heroChar">
+                <div class="hero-char-head">
+                    <span class="hero-char-face"></span>
+                </div>
+                <div class="hero-char-legs">
+                    <span class="hero-char-leg hero-char-leg-left"></span>
+                    <span class="hero-char-leg hero-char-leg-right"></span>
+                </div>
+            </div>
+        </div>
         <div class="hero-content">
             <!-- <span class="hero-eyebrow">SOUGOU STORE</span> -->
             <h1 class="hero-title">こだわりの<br>商品を届ける</h1>
@@ -142,7 +259,7 @@
         <div class="hero-panel-bot">
             <div class="panel-cat-label">CATEGORIES</div>
             {% for cat in categories %}
-            <a href="{% url 'store:searchResult' %}?category={ cat.category_id %}">
+            <a href="{% url 'store:searchResult' %}?category={{ cat.category_id }}">
                 <div class="cat-item">
                     <div class="cat-left"><div class="cat-bullet"></div><span class="cat-name">{{ cat.name }}</span></div>
                     <span class="cat-count">→</span>
@@ -260,6 +377,46 @@
 
 {% block extra_js %}
 <script>
+// ── キャラ操作 ──
+const char = document.getElementById("heroChar");
+const area = document.querySelector(".hero-left");
+
+if (char && area) {
+    let dragging = false;
+    let ox = 0, oy = 0;
+
+    char.addEventListener("mousedown", e => {
+        dragging = true;
+        const rect = char.getBoundingClientRect();
+        ox = e.clientX - rect.left;
+        oy = e.clientY - rect.top;
+        char.classList.add("dragging");
+    });
+
+    document.addEventListener("mousemove", e => {
+        if (!dragging) return;
+
+        const ar = area.getBoundingClientRect();
+        char.style.left = (e.clientX - ar.left - ox) + "px";
+        char.style.top  = (e.clientY - ar.top - oy) + "px";
+        char.style.bottom = "auto";
+    });
+
+    document.addEventListener("mouseup", () => {
+        if (!dragging) return;
+        dragging = false;
+
+        char.classList.remove("dragging");
+
+        char.style.transition = "top 0.4s";
+        char.style.top = (area.clientHeight - 50) + "px";
+
+        setTimeout(() => {
+            char.style.transition = "";
+        }, 400);
+    });
+}
+
 // ── 価格スライダー ──
 const minRange = document.getElementById("minRange");
 const maxRange = document.getElementById("maxRange");
