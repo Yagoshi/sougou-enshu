@@ -12,6 +12,14 @@ class UserForm(forms.ModelForm):
         super().__init__(*args, **kwargs)
         self.label_suffix = ''
 
+        self.order_fields([
+            'user_id',
+            'password',
+            'password_confirm',
+            'name',
+            'address',
+        ])
+
     class Meta:
         model = User
         fields = ['user_id', 'password', 'name', 'address']
@@ -24,6 +32,16 @@ class UserForm(forms.ModelForm):
             'name': '名前',
             'address': '住所',
         }
+
+    def clean(self):
+        cleaned_data = super().clean()
+        password = cleaned_data.get('password')
+        password_confirm = cleaned_data.get('password_confirm')
+
+        if password and password_confirm and password != password_confirm:
+            self.add_error('password_confirm', 'パスワードが一致しません。')
+
+        return cleaned_data
 
     def clean(self):
         cleaned_data = super().clean()
