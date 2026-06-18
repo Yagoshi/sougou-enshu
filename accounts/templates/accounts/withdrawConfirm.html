@@ -719,7 +719,10 @@
                   </div>
 
                   <div class="cl6-right">
-                    <div class="cl6-t" id="cl6t">🎉 退会を中止しました！ありがとうございます</div>
+                    <div class="cl6-t" id="cl6t">
+                      🎉 退会を中止しました！ありがとうございます<br>
+                      引き続きご利用ください。
+                    </div>
                     <div class="cl6-s" id="cl6s">
                       引き続きご利用いただけます。<br>
                       またいつでも遊びにきてください。
@@ -851,7 +854,7 @@
     resetEndLinks();
 
     if(type === 'cancel'){
-      clt.textContent = '🎉 退会を中止しました！ありがとうございます';
+      clt.innerHTML = '🎉 退会を中止しました！<br>ありがとうございます';
       cls.innerHTML = '引き続きご利用いただけます。<br>またいつでも遊びにきてください。';
 
       const a = document.createElement('a');
