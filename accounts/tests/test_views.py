@@ -9,7 +9,7 @@ class LoginViewTest(TestCase):
 
     def setUp(self):
         self.user = User.objects.create(
-            user_id='loginuser', password='pass1234',
+            user_id='loginuser', password=make_password('pass1234'),
             name='ログインテスト', address='東京都1-1-1',
         )
 

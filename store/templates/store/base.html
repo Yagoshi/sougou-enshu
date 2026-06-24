@@ -25,13 +25,43 @@
         {% endif %}
     </div>
     <div class="nav-icons">
-        <a href="{% url 'store:cart' %}">🛒</a>
+        <a href="{% url 'store:cart' %}" class="nav-cart-icon" title="カート">
+            🛒
+        </a>
+    
+        {% if request.session.login_user_id %}
+            <a href="{% url 'accounts:userInfo' %}" class="nav-pop-icon" title="マイページ">
+                🧸
+            </a>
+        {% else %}
+            <a href="{% url 'accounts:login' %}" class="nav-pop-icon" title="ログイン">
+                🧸
+            </a>
+        {% endif %}
     </div>
 </nav>
 
 <!-- ティッカー -->
 <div class="ticker">
     <div class="ticker-inner">
+        <span class="ticker-item">送料無料キャンペーン実施中<span class="ticker-sep"></span></span>
+        <span class="ticker-item">新商品続々入荷<span class="ticker-sep"></span></span>
+        <span class="ticker-item">会員登録で特典あり<span class="ticker-sep"></span></span>
+        <span class="ticker-item">送料無料キャンペーン実施中<span class="ticker-sep"></span></span>
+        <span class="ticker-item">新商品続々入荷<span class="ticker-sep"></span></span>
+        <span class="ticker-item">会員登録で特典あり<span class="ticker-sep"></span></span>
+        <span class="ticker-item">送料無料キャンペーン実施中<span class="ticker-sep"></span></span>
+        <span class="ticker-item">新商品続々入荷<span class="ticker-sep"></span></span>
+        <span class="ticker-item">会員登録で特典あり<span class="ticker-sep"></span></span>
+        <span class="ticker-item">送料無料キャンペーン実施中<span class="ticker-sep"></span></span>
+        <span class="ticker-item">新商品続々入荷<span class="ticker-sep"></span></span>
+        <span class="ticker-item">会員登録で特典あり<span class="ticker-sep"></span></span>
+        <span class="ticker-item">送料無料キャンペーン実施中<span class="ticker-sep"></span></span>
+        <span class="ticker-item">新商品続々入荷<span class="ticker-sep"></span></span>
+        <span class="ticker-item">会員登録で特典あり<span class="ticker-sep"></span></span>
+        <span class="ticker-item">送料無料キャンペーン実施中<span class="ticker-sep"></span></span>
+        <span class="ticker-item">新商品続々入荷<span class="ticker-sep"></span></span>
+        <span class="ticker-item">会員登録で特典あり<span class="ticker-sep"></span></span>
         <span class="ticker-item">送料無料キャンペーン実施中<span class="ticker-sep"></span></span>
         <span class="ticker-item">新商品続々入荷<span class="ticker-sep"></span></span>
         <span class="ticker-item">会員登録で特典あり<span class="ticker-sep"></span></span>

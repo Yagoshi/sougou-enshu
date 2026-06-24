@@ -3,6 +3,336 @@
 
 {% block title %}{{ item.name }} | SOUGOU STORE{% endblock %}
 
+{% block extra_css %}
+<style>
+.review-modern {
+  background: var(--bg);
+}
+
+.review-summary-modern {
+  display: grid;
+  grid-template-columns: 220px 1fr;
+  gap: 24px;
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 24px;
+  margin-bottom: 28px;
+}
+
+.review-score-box {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.review-score-main {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+}
+
+.review-score-star {
+  color: #f5a623;
+  font-size: 28px;
+}
+
+.review-score-number {
+  font-size: 38px;
+  font-weight: 700;
+  color: var(--text);
+  letter-spacing: -0.03em;
+}
+
+.review-score-max {
+  font-size: 14px;
+  color: var(--text3);
+}
+
+.review-score-count {
+  margin-top: 6px;
+  font-size: 12px;
+  color: var(--text2);
+}
+
+.review-bars {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.review-bar-row {
+  display: grid;
+  grid-template-columns: 42px 1fr 42px;
+  align-items: center;
+  gap: 10px;
+  font-size: 12px;
+  color: var(--text2);
+}
+
+.review-bar-track {
+  height: 7px;
+  background: var(--bg3);
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.review-bar-fill {
+  height: 100%;
+  background: var(--ac-mid);
+  border-radius: 999px;
+}
+
+.review-bar-percent {
+  text-align: right;
+  color: var(--text3);
+}
+
+.review-form-card {
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 24px;
+  background: var(--bg);
+  margin-bottom: 34px;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.035);
+}
+
+.review-form-head {
+  margin-bottom: 20px;
+}
+
+.review-form-head h3 {
+  font-size: 16px;
+  font-weight: 700;
+  margin-bottom: 6px;
+}
+
+.review-form-head p {
+  font-size: 12px;
+  color: var(--text2);
+}
+
+.review-form-group {
+  margin-bottom: 18px;
+}
+
+.review-form-label {
+  display: block;
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  color: var(--text3);
+  margin-bottom: 8px;
+}
+
+.review-star-picker {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.review-star-btn {
+  border: none;
+  background: transparent;
+  color: var(--bg3);
+  font-size: 34px;
+  line-height: 1;
+  cursor: pointer;
+  transition: transform 0.12s, color 0.12s;
+  padding: 0;
+}
+
+.review-star-btn:hover {
+  transform: translateY(-2px) scale(1.08);
+}
+
+.review-star-btn.is-active {
+  color: #f5a623;
+}
+
+.review-rating-text {
+  margin-top: 8px;
+  font-size: 12px;
+  color: var(--text3);
+}
+
+.review-rating-text.is-error {
+  color: #c0392b;
+}
+
+.review-input,
+.review-textarea {
+  width: 100%;
+  padding: 12px 14px;
+  border: 1px solid var(--border2);
+  border-radius: var(--radius);
+  background: var(--bg);
+  color: var(--text);
+  font-size: 13px;
+  font-family: 'Noto Sans JP', sans-serif;
+  outline: none;
+  transition: border-color 0.15s, box-shadow 0.15s, background 0.15s;
+}
+
+.review-input:focus,
+.review-textarea:focus {
+  border-color: var(--ac);
+  box-shadow: 0 0 0 3px rgba(45, 106, 79, 0.1);
+  background: #fff;
+}
+
+.review-textarea {
+  resize: vertical;
+  line-height: 1.7;
+}
+
+.review-submit-btn {
+  background: var(--btn-bg);
+  color: var(--btn-text);
+  border: none;
+  border-radius: var(--radius);
+  padding: 12px 20px;
+  font-size: 13px;
+  font-weight: 700;
+  font-family: 'Noto Sans JP', sans-serif;
+  cursor: pointer;
+  transition: opacity 0.15s, transform 0.15s;
+}
+
+.review-submit-btn:hover {
+  opacity: 0.88;
+  transform: translateY(-1px);
+}
+
+.review-login-card {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 18px 20px;
+  margin-bottom: 30px;
+  font-size: 13px;
+  color: var(--text2);
+}
+
+.review-login-card a {
+  color: var(--ac);
+  font-weight: 700;
+}
+
+.review-list-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.review-list-head h3 {
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.review-list-head p {
+  font-size: 12px;
+  color: var(--text3);
+}
+
+.review-list-modern {
+  display: grid;
+  gap: 14px;
+}
+
+.review-card-modern {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 18px 20px;
+  transition: border-color 0.15s, transform 0.15s, box-shadow 0.15s;
+}
+
+.review-card-modern:hover {
+  border-color: var(--border2);
+  transform: translateY(-1px);
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.035);
+}
+
+.review-card-top {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 6px;
+}
+
+.review-card-stars {
+  color: #f5a623;
+  font-size: 15px;
+  letter-spacing: 0.05em;
+}
+
+.verified-badge-modern {
+  font-size: 10px;
+  color: var(--ac);
+  border: 1px solid var(--ac-mid);
+  border-radius: 999px;
+  padding: 2px 8px;
+  background: var(--ac-sub);
+}
+
+.review-card-user {
+  font-size: 12px;
+  color: var(--text3);
+  margin-bottom: 8px;
+}
+
+.review-card-title {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text);
+  margin-bottom: 8px;
+}
+
+.review-card-comment {
+  font-size: 13px;
+  color: var(--text2);
+  line-height: 1.8;
+}
+
+.review-card-date {
+  font-size: 11px;
+  color: var(--text3);
+  margin-top: 10px;
+}
+
+.review-locked-text {
+  font-size: 12px;
+  color: var(--text3);
+}
+
+.review-empty {
+  color: var(--text3);
+  font-size: 13px;
+}
+
+@media (max-width: 760px) {
+  .review-summary-modern {
+    grid-template-columns: 1fr;
+  }
+
+  .review-score-number {
+    font-size: 32px;
+  }
+
+  .review-star-btn {
+    font-size: 30px;
+  }
+
+  .review-list-head {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}
+</style>
+{% endblock %}
+
 {% block content %}
 <div class="item-section">
     <div class="item-img-wrap">
@@ -78,64 +408,217 @@
 </div>
 
 <!-- レビュー -->
-<div class="section">
+<div class="section review-modern">
     <div class="section-header">
         <span class="section-title">カスタマーレビュー</span>
     </div>
-    <div class="review-summary">
-        <div class="review-avg">★ {{ avg_rating }} <span style="font-size: 14px; font-weight: 400; color: var(--text3);">/ 5</span></div>
-        <div class="review-count">{{ review_count }}件のレビュー</div>
-        <div style="margin-top: 14px;">
+
+    <div class="review-summary-modern">
+        <div class="review-score-box">
+            <div class="review-score-main">
+                <span class="review-score-star">★</span>
+                <span class="review-score-number">{{ avg_rating }}</span>
+                <span class="review-score-max">/ 5</span>
+            </div>
+            <div class="review-score-count">
+                {{ review_count }}件のレビュー
+            </div>
+        </div>
+
+        <div class="review-bars">
             {% for row in rating_distribution %}
-            <div class="rating-row">
-                <span style="min-width: 28px;">星{{ row.star }}</span>
-                <div class="rating-bar"><div class="rating-bar-fill" style="width: {{ row.percent }}%;"></div></div>
-                <span>{{ row.percent }}%</span>
+            <div class="review-bar-row">
+                <span class="review-bar-label">星{{ row.star }}</span>
+                <div class="review-bar-track">
+                    <div class="review-bar-fill" style="width: {{ row.percent }}%;"></div>
+                </div>
+                <span class="review-bar-percent">{{ row.percent }}%</span>
             </div>
             {% endfor %}
         </div>
     </div>
 
     {% if login_user_id %}
-    <div style="margin-bottom: 32px;">
-        <h3 style="font-size: 13px; font-weight: 500; margin-bottom: 16px; letter-spacing: 0.05em;">レビューを投稿する</h3>
-        <form method="post" action="{% url 'store:add_review' item.item_id %}">
+    <div class="review-form-card">
+        <div class="review-form-head">
+            <h3>レビューを投稿する</h3>
+            <p>星を選択して、この商品の感想を投稿してください。</p>
+        </div>
+
+        <form method="post" action="{% url 'store:add_review' item.item_id %}" id="reviewForm">
             {% csrf_token %}
-            <div class="form-group">
-                <label class="form-label">評価</label>
-                {{ form.rating }}
+
+            <div class="review-form-group">
+                <label class="review-form-label">評価</label>
+
+                <input type="hidden" name="rating" id="reviewRatingInput" required>
+
+                <div class="review-star-picker" id="reviewStarPicker">
+                    <button type="button" class="review-star-btn" data-value="1">★</button>
+                    <button type="button" class="review-star-btn" data-value="2">★</button>
+                    <button type="button" class="review-star-btn" data-value="3">★</button>
+                    <button type="button" class="review-star-btn" data-value="4">★</button>
+                    <button type="button" class="review-star-btn" data-value="5">★</button>
+                </div>
+
+                <p class="review-rating-text" id="reviewRatingText">
+                    星を選択してください
+                </p>
             </div>
-            <div class="form-group">
-                <label class="form-label">タイトル</label>
-                {{ form.title }}
+
+            <div class="review-form-group">
+                <label for="reviewTitle" class="review-form-label">タイトル</label>
+                <input
+                    type="text"
+                    id="reviewTitle"
+                    name="title"
+                    class="review-input"
+                    placeholder="例：使いやすくて満足です"
+                    required
+                >
             </div>
-            <div class="form-group">
-                <label class="form-label">レビュー本文</label>
-                {{ form.comment }}
+
+            <div class="review-form-group">
+                <label for="reviewComment" class="review-form-label">レビュー本文</label>
+                <textarea
+                    id="reviewComment"
+                    name="comment"
+                    class="review-textarea"
+                    rows="5"
+                    placeholder="商品の使い心地や感想を入力してください"
+                    required
+                ></textarea>
             </div>
-            <button type="submit" class="btn-primary">レビューを投稿する</button>
+
+            <button type="submit" class="review-submit-btn">
+                レビューを投稿する
+            </button>
         </form>
     </div>
     {% else %}
-    <p style="font-size: 13px; color: var(--text2); margin-bottom: 24px;">
-        レビューを投稿するには<a href="{% url 'accounts:login' %}" style="color: var(--ac);">ログイン</a>してください。
-    </p>
+    <div class="review-login-card">
+        <p>
+            レビューを投稿するには
+            <a href="{% url 'accounts:login' %}">ログイン</a>
+            してください。
+        </p>
+    </div>
     {% endif %}
 
-    <h3 style="font-size: 13px; font-weight: 500; margin-bottom: 16px; letter-spacing: 0.05em;">レビュー一覧</h3>
-    {% for review in reviews %}
-    <div class="review-card">
-        <div class="review-stars">{{ review.stars }}</div>
-        {% if login_user_id %}
-            <div class="review-user">{{ review.user.name }}</div>
-            {% if review.is_verified_purchase %}<span class="verified-badge">✓ 購入済み</span>{% endif %}
-            <div class="review-title">{{ review.title }}</div>
-            <div class="review-comment">{{ review.comment }}</div>
-            <div class="review-date">{{ review.created_at|date:"Y年m月d日" }}</div>
+    <div class="review-list-head">
+        <h3>レビュー一覧</h3>
+
+        {% if not login_user_id %}
+            <p>未ログイン時は星評価のみ表示されます。</p>
         {% endif %}
     </div>
-    {% empty %}
-    <p style="font-size: 13px; color: var(--text3);">まだレビューはありません。</p>
-    {% endfor %}
+
+    <div class="review-list-modern">
+        {% for review in reviews %}
+        <div class="review-card-modern">
+            <div class="review-card-top">
+                <div class="review-card-stars">
+                    {{ review.stars }}
+                </div>
+
+                {% if login_user_id and review.is_verified_purchase %}
+                    <span class="verified-badge-modern">✓ 購入済み</span>
+                {% endif %}
+            </div>
+
+            {% if login_user_id %}
+                <div class="review-card-user">
+                    {{ review.user.name }}
+                </div>
+
+                <div class="review-card-title">
+                    {{ review.title }}
+                </div>
+
+                <div class="review-card-comment">
+                    {{ review.comment }}
+                </div>
+
+                <div class="review-card-date">
+                    {{ review.created_at|date:"Y年m月d日" }}
+                </div>
+            {% else %}
+                <div class="review-locked-text">
+                    ログインするとレビュー本文を確認できます。
+                </div>
+            {% endif %}
+        </div>
+        {% empty %}
+        <p class="review-empty">
+            まだレビューはありません。
+        </p>
+        {% endfor %}
+    </div>
 </div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    const picker = document.getElementById("reviewStarPicker");
+    const ratingInput = document.getElementById("reviewRatingInput");
+    const ratingText = document.getElementById("reviewRatingText");
+    const reviewForm = document.getElementById("reviewForm");
+
+    if (!picker || !ratingInput || !ratingText || !reviewForm) {
+        return;
+    }
+
+    const stars = Array.from(picker.querySelectorAll(".review-star-btn"));
+
+    const ratingMessages = {
+        1: "★☆☆☆☆ とても悪い",
+        2: "★★☆☆☆ 悪い",
+        3: "★★★☆☆ 普通",
+        4: "★★★★☆ 良い",
+        5: "★★★★★ とても良い"
+    };
+
+    function paintStars(value) {
+        stars.forEach(star => {
+            const starValue = Number(star.dataset.value);
+
+            if (starValue <= value) {
+                star.classList.add("is-active");
+            } else {
+                star.classList.remove("is-active");
+            }
+        });
+    }
+
+    stars.forEach(star => {
+        star.addEventListener("mouseenter", function () {
+            paintStars(Number(this.dataset.value));
+        });
+
+        star.addEventListener("click", function () {
+            const value = Number(this.dataset.value);
+
+            ratingInput.value = value;
+            ratingText.textContent = ratingMessages[value];
+            ratingText.classList.remove("is-error");
+
+            paintStars(value);
+        });
+    });
+
+    picker.addEventListener("mouseleave", function () {
+        paintStars(Number(ratingInput.value || 0));
+    });
+
+    reviewForm.addEventListener("submit", function (event) {
+        if (!ratingInput.value) {
+            event.preventDefault();
+            ratingText.textContent = "星評価を選択してください。";
+            ratingText.classList.add("is-error");
+            paintStars(0);
+        }
+    });
+});
+</script>
 {% endblock %}

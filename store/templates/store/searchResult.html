@@ -3,15 +3,102 @@
 
 {% block title %}検索結果 | SOUGOU STORE{% endblock %}
 
+{% block extra_css %}
+<style>
+.price-filter { width: 100%; margin: 4px 0; }
+.price-display { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; }
+.price-box { background: var(--bg); border: 1px solid var(--border2); border-radius: var(--radius); padding: 6px 10px; font-size: 12px; font-weight: 500; color: var(--text); min-width: 86px; text-align: center; }
+.price-sep { font-size: 12px; color: var(--text3); flex-shrink: 0; }
+.range-wrap { position: relative; height: 40px; user-select: none; }
+.range-track { position: absolute; top: 50%; left: 0; right: 0; height: 4px; background: var(--bg3); border-radius: 999px; transform: translateY(-50%); pointer-events: none; }
+.range-fill { position: absolute; top: 50%; height: 4px; background: var(--ac); border-radius: 999px; transform: translateY(-50%); pointer-events: none; }
+.range-wrap input[type=range] { position: absolute; width: 100%; top: 50%; transform: translateY(-50%); margin: 0; padding: 0; background: transparent; pointer-events: none; appearance: none; -webkit-appearance: none; outline: none; }
+.range-wrap input[type=range]::-webkit-slider-runnable-track { background: transparent; height: 4px; }
+.range-wrap input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; appearance: none; pointer-events: auto; width: 20px; height: 20px; border-radius: 50%; background: var(--ac); border: 2.5px solid var(--bg); cursor: grab; margin-top: -8px; box-shadow: 0 0 0 2px var(--ac); }
+.range-wrap input[type=range]:active::-webkit-slider-thumb { cursor: grabbing; }
+.range-wrap input[type=range]::-moz-range-thumb { pointer-events: auto; width: 16px; height: 16px; border-radius: 50%; background: var(--ac); border: 2px solid var(--bg); cursor: grab; box-shadow: 0 0 0 2px var(--ac); }
+.sort-bar { display: flex; align-items: center; gap: 6px; margin-bottom: 20px; flex-wrap: wrap; }
+.sort-btn { font-size: 11px; padding: 5px 12px; border: 1px solid var(--border2); border-radius: 999px; background: var(--bg); color: var(--text2); cursor: pointer; transition: all 0.15s; white-space: nowrap; font-family: 'Noto Sans JP', sans-serif; }
+.sort-btn:hover { border-color: var(--ac); color: var(--ac); }
+.sort-btn.active { background: var(--ac); color: var(--ac-text); border-color: var(--ac); }
+.rating-star { color: #f5a623; }
+.rating-count { font-size: 10px; color: var(--text3); }
+.no-rating { font-size: 11px; color: var(--text3); }
+</style>
+{% endblock %}
+
 {% block content %}
 <div class="section">
     <div class="section-header">
-        <span class="section-title">{% if keyword %}「{{ keyword }}」の検索結果{% else %}検索結果{% endif %}</span>
+        <span class="section-title">
+            {% if keyword %}「{{ keyword }}」の検索結果{% else %}検索結果{% endif %}
+        </span>
         <a href="{% url 'store:main' %}" class="section-more">← トップに戻る</a>
     </div>
-    <div class="product-grid">
+
+    <!-- 検索フォーム -->
+    <form action="{% url 'store:searchResult' %}" method="GET"
+          style="display: flex; gap: 16px; align-items: flex-start; flex-wrap: wrap; margin-bottom: 20px; padding: 20px; background: var(--bg2); border-radius: var(--radius-lg);">
+
+        <div style="display: flex; flex-direction: column; gap: 6px; flex: 1; min-width: 160px;">
+            <label style="font-size: 11px; color: var(--text3); letter-spacing: 0.1em;">キーワード</label>
+            <input type="text" name="keyword" value="{{ keyword|default:'' }}" placeholder="商品名で検索"
+                style="padding: 8px 12px; border: 1px solid var(--border2); border-radius: var(--radius); font-size: 12px; font-family: 'Noto Sans JP', sans-serif; background: var(--bg); color: var(--text); outline: none;">
+        </div>
+
+        <div style="display: flex; flex-direction: column; gap: 6px; min-width: 140px;">
+            <label style="font-size: 11px; color: var(--text3); letter-spacing: 0.1em;">カテゴリ</label>
+            <select name="category"
+                style="padding: 8px 12px; border: 1px solid var(--border2); border-radius: var(--radius); font-size: 12px; font-family: 'Noto Sans JP', sans-serif; color: var(--text2); background: var(--bg);">
+                <option value="">すべて</option>
+                {% for cat in categories %}
+                    <option value="{{ cat.category_id }}">{{ cat.name }}</option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div style="display: flex; flex-direction: column; gap: 6px; min-width: 220px;">
+            <label style="font-size: 11px; color: var(--text3); letter-spacing: 0.1em;">価格帯</label>
+            <div class="price-filter">
+                <div class="price-display">
+                    <div class="price-box">¥<span id="minPriceLabel">{{ selected_min }}</span></div>
+                    <span class="price-sep">〜</span>
+                    <div class="price-box">¥<span id="maxPriceLabel">{{ selected_max }}</span></div>
+                </div>
+                <div class="range-wrap">
+                    <div class="range-track"></div>
+                    <div class="range-fill" id="rangeFill"></div>
+                    <input type="range" id="minRange" min="{{ min_price }}" max="{{ max_price }}" value="{{ selected_min }}" step="100">
+                    <input type="range" id="maxRange" min="{{ min_price }}" max="{{ max_price }}" value="{{ selected_max }}" step="100">
+                </div>
+                <input type="hidden" name="min_price" id="minPriceInput" value="{{ selected_min }}">
+                <input type="hidden" name="max_price" id="maxPriceInput" value="{{ selected_max }}">
+            </div>
+        </div>
+
+        <div style="display: flex; align-items: flex-end; padding-bottom: 2px;">
+            <button type="submit" class="btn-primary" style="padding: 8px 16px;">検索</button>
+        </div>
+    </form>
+
+    <!-- 並べ替えバー -->
+    <div class="sort-bar">
+        <span style="font-size: 11px; color: var(--text3); margin-right: 4px;">並べ替え：</span>
+        <button class="sort-btn active" data-sort="default">おすすめ順</button>
+        <button class="sort-btn" data-sort="price-asc">価格が安い順</button>
+        <button class="sort-btn" data-sort="price-desc">価格が高い順</button>
+        <button class="sort-btn" data-sort="rating-desc">評価が高い順</button>
+        <button class="sort-btn" data-sort="review-desc">レビューが多い順</button>
+    </div>
+
+    <!-- 商品グリッド -->
+    <div class="product-grid" id="productGrid">
         {% for item in results %}
-        <a href="{% url 'store:itemDetail' item.item_id %}" class="product-card">
+        <a href="{% url 'store:itemDetail' item.item_id %}" class="product-card"
+           data-price="{{ item.price }}"
+           data-rating="{{ item.avg_rating|default:0 }}"
+           data-review="{{ item.review_count|default:0 }}"
+           data-recommended="{% if item.recommended %}1{% else %}0{% endif %}">
             <div class="product-img">
                 {% if item.recommended %}<span class="badge-new">PICK</span>{% endif %}
                 {% if item.image %}
@@ -22,10 +109,69 @@
             </div>
             <div class="product-name">{{ item.name }}</div>
             <div class="product-price">¥{{ item.price }}<span class="product-tax">（税込）</span></div>
+            <div style="margin-top: 4px; font-size: 11px;">
+                {% if item.avg_rating %}
+                    <span class="rating-star">★</span> {{ item.avg_rating|floatformat:1 }}
+                    <span class="rating-count">({{ item.review_count }}件)</span>
+                {% else %}
+                    <span class="no-rating">評価なし</span>
+                {% endif %}
+            </div>
         </a>
         {% empty %}
         <p style="color: var(--text2); font-size: 13px; grid-column: 1/-1;">条件に一致する商品は見つかりませんでした。</p>
         {% endfor %}
     </div>
 </div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+const minRange = document.getElementById("minRange");
+const maxRange = document.getElementById("maxRange");
+const minPriceLabel = document.getElementById("minPriceLabel");
+const maxPriceLabel = document.getElementById("maxPriceLabel");
+const minPriceInput = document.getElementById("minPriceInput");
+const maxPriceInput = document.getElementById("maxPriceInput");
+const rangeFill = document.getElementById("rangeFill");
+const PRICE_MIN = parseInt(minRange.min);
+const PRICE_MAX = parseInt(minRange.max);
+
+function pct(val) { return ((val - PRICE_MIN) / (PRICE_MAX - PRICE_MIN)) * 100; }
+
+function updateSlider() {
+    let lo = parseInt(minRange.value);
+    let hi = parseInt(maxRange.value);
+    if (lo > hi) { [lo, hi] = [hi, lo]; minRange.value = lo; maxRange.value = hi; }
+    minPriceLabel.textContent = lo.toLocaleString();
+    maxPriceLabel.textContent = hi.toLocaleString();
+    minPriceInput.value = lo;
+    maxPriceInput.value = hi;
+    rangeFill.style.left  = pct(lo) + '%';
+    rangeFill.style.width = (pct(hi) - pct(lo)) + '%';
+}
+
+minRange.addEventListener("input", updateSlider);
+maxRange.addEventListener("input", updateSlider);
+updateSlider();
+
+const grid = document.getElementById("productGrid");
+const cards = Array.from(grid.querySelectorAll(".product-card"));
+
+document.querySelectorAll(".sort-btn").forEach(btn => {
+    btn.addEventListener("click", () => {
+        document.querySelectorAll(".sort-btn").forEach(b => b.classList.remove("active"));
+        btn.classList.add("active");
+        const sort = btn.dataset.sort;
+        const sorted = [...cards].sort((a, b) => {
+            if (sort === "price-asc")   return parseFloat(a.dataset.price) - parseFloat(b.dataset.price);
+            if (sort === "price-desc")  return parseFloat(b.dataset.price) - parseFloat(a.dataset.price);
+            if (sort === "rating-desc") return parseFloat(b.dataset.rating) - parseFloat(a.dataset.rating);
+            if (sort === "review-desc") return parseFloat(b.dataset.review) - parseFloat(a.dataset.review);
+            return parseInt(b.dataset.recommended) - parseInt(a.dataset.recommended);
+        });
+        sorted.forEach(card => grid.appendChild(card));
+    });
+});
+</script>
 {% endblock %}

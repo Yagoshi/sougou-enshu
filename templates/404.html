@@ -1,0 +1,327 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>404 - ページが見つかりません | SOUGOU STORE</title>
+    <link rel="stylesheet" href="{% static 'accounts/css/style.css' %}">
+    <style>
+        body {
+            background: var(--bg);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .error-page {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 40px 24px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* ── 背景の巨大な404テキスト ── */
+        .error-bg-number {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: clamp(200px, 30vw, 440px);
+            font-weight: 700;
+            color: var(--bg3);
+            opacity: 0.45;
+            letter-spacing: -0.06em;
+            line-height: 1;
+            pointer-events: none;
+            user-select: none;
+            z-index: 0;
+        }
+
+        /* ── 浮遊するドット装飾 ── */
+        .floating-dot {
+            position: absolute;
+            border-radius: 50%;
+            opacity: 0;
+            animation: float-up 6s ease-in-out infinite;
+            pointer-events: none;
+            z-index: 0;
+        }
+        .floating-dot:nth-child(1)  { width: 6px;  height: 6px;  background: var(--ac);     left: 10%; bottom: -10%; animation-delay: 0s;   animation-duration: 7s; }
+        .floating-dot:nth-child(2)  { width: 4px;  height: 4px;  background: var(--ac-mid); left: 25%; bottom: -10%; animation-delay: 1.2s; animation-duration: 8s; }
+        .floating-dot:nth-child(3)  { width: 8px;  height: 8px;  background: var(--bg3);    left: 45%; bottom: -10%; animation-delay: 0.5s; animation-duration: 6.5s; }
+        .floating-dot:nth-child(4)  { width: 5px;  height: 5px;  background: var(--ac);     left: 65%; bottom: -10%; animation-delay: 2s;   animation-duration: 7.5s; }
+        .floating-dot:nth-child(5)  { width: 3px;  height: 3px;  background: var(--ac-mid); left: 80%; bottom: -10%; animation-delay: 0.8s; animation-duration: 9s; }
+        .floating-dot:nth-child(6)  { width: 7px;  height: 7px;  background: var(--bg3);    left: 35%; bottom: -10%; animation-delay: 3s;   animation-duration: 6s; }
+        .floating-dot:nth-child(7)  { width: 4px;  height: 4px;  background: var(--ac);     left: 55%; bottom: -10%; animation-delay: 1.8s; animation-duration: 8.5s; }
+        .floating-dot:nth-child(8)  { width: 6px;  height: 6px;  background: var(--ac-mid); left: 90%; bottom: -10%; animation-delay: 2.5s; animation-duration: 7s; }
+
+        @keyframes float-up {
+            0%   { transform: translateY(0) scale(0); opacity: 0; }
+            10%  { opacity: 0.6; transform: scale(1); }
+            90%  { opacity: 0.3; }
+            100% { transform: translateY(-100vh) scale(0.5); opacity: 0; }
+        }
+
+        /* ── コンテンツカード ── */
+        .error-card {
+            position: relative;
+            z-index: 1;
+            text-align: center;
+            max-width: 480px;
+            width: 100%;
+        }
+
+        .error-eyebrow {
+            font-size: 10px;
+            letter-spacing: 0.28em;
+            color: var(--ac-mid);
+            margin-bottom: 16px;
+            text-transform: uppercase;
+        }
+
+        .error-title {
+            font-size: 17px;
+            font-weight: 700;
+            color: var(--text);
+            line-height: 1.7;
+            margin-bottom: 12px;
+            letter-spacing: 0.02em;
+        }
+
+        .error-desc {
+            font-size: 12px;
+            color: var(--text2);
+            line-height: 2;
+            margin-bottom: 32px;
+        }
+
+        /* ── コンパスアニメーション ── */
+        .compass-wrapper {
+            margin: 0 auto 36px;
+            width: 120px;
+            height: 120px;
+            position: relative;
+        }
+        .compass-ring {
+            width: 100%;
+            height: 100%;
+            border: 1.5px solid var(--border2);
+            border-radius: 50%;
+            position: relative;
+        }
+        .compass-ring::before {
+            content: '';
+            position: absolute;
+            top: -5px; left: 50%;
+            transform: translateX(-50%);
+            width: 8px; height: 8px;
+            background: var(--ac);
+            border-radius: 50%;
+        }
+        .compass-tick {
+            position: absolute;
+            font-size: 8px;
+            letter-spacing: 0.15em;
+            color: var(--text3);
+            font-weight: 500;
+        }
+        .compass-tick.n { top: 8px;  left: 50%; transform: translateX(-50%); color: var(--ac); font-weight: 700; }
+        .compass-tick.e { right: 8px; top: 50%; transform: translateY(-50%); }
+        .compass-tick.s { bottom: 8px; left: 50%; transform: translateX(-50%); }
+        .compass-tick.w { left: 8px;  top: 50%; transform: translateY(-50%); }
+
+        .compass-needle {
+            position: absolute;
+            top: 50%; left: 50%;
+            width: 2px; height: 44px;
+            transform-origin: bottom center;
+            transform: translate(-50%, -100%);
+            animation: needle-spin 4s ease-in-out infinite;
+        }
+        .compass-needle::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 50%;
+            transform: translateX(-50%);
+            width: 0; height: 0;
+            border-left: 5px solid transparent;
+            border-right: 5px solid transparent;
+            border-bottom: 20px solid var(--ac);
+        }
+        .compass-needle::after {
+            content: '';
+            position: absolute;
+            bottom: -20px; left: 50%;
+            transform: translateX(-50%);
+            width: 0; height: 0;
+            border-left: 4px solid transparent;
+            border-right: 4px solid transparent;
+            border-top: 16px solid var(--text3);
+            opacity: 0.5;
+        }
+        .compass-center-dot {
+            position: absolute;
+            top: 50%; left: 50%;
+            width: 6px; height: 6px;
+            background: var(--text);
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 2;
+        }
+
+        @keyframes needle-spin {
+            0%   { transform: translate(-50%, -100%) rotate(0deg); }
+            25%  { transform: translate(-50%, -100%) rotate(130deg); }
+            50%  { transform: translate(-50%, -100%) rotate(40deg); }
+            75%  { transform: translate(-50%, -100%) rotate(200deg); }
+            100% { transform: translate(-50%, -100%) rotate(360deg); }
+        }
+
+        /* ── ボタン ── */
+        .error-actions {
+            display: flex;
+            gap: 12px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+        .error-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 11px 26px;
+            font-size: 11px;
+            font-weight: 600;
+            letter-spacing: 0.1em;
+            border-radius: var(--radius);
+            transition: all 0.2s ease;
+            text-decoration: none;
+            cursor: pointer;
+            border: none;
+            font-family: inherit;
+        }
+        .error-btn-primary {
+            background: var(--btn-bg);
+            color: var(--btn-text);
+        }
+        .error-btn-primary:hover {
+            background: var(--ac);
+            transform: translateY(-1px);
+        }
+        .error-btn-secondary {
+            background: transparent;
+            color: var(--text2);
+            border: 1px solid var(--border2);
+        }
+        .error-btn-secondary:hover {
+            border-color: var(--ac);
+            color: var(--ac);
+            transform: translateY(-1px);
+        }
+
+        .error-btn-arrow {
+            font-size: 13px;
+            transition: transform 0.2s;
+        }
+        .error-btn-primary:hover .error-btn-arrow {
+            transform: translateX(3px);
+        }
+
+        /* ── フッターバー ── */
+        .error-footer {
+            text-align: center;
+            padding: 18px;
+            border-top: 1px solid var(--border);
+            font-size: 10px;
+            letter-spacing: 0.15em;
+            color: var(--text3);
+        }
+
+        /* ── レスポンシブ ── */
+        @media (max-width: 480px) {
+            .error-bg-number { font-size: 160px; }
+            .compass-wrapper { width: 100px; height: 100px; }
+            .compass-needle { height: 36px; }
+            .error-actions { flex-direction: column; align-items: center; }
+        }
+    </style>
+</head>
+<body>
+
+<!-- ナビゲーション -->
+<nav class="nav">
+    <a href="/" class="nav-logo">SOUGOU STORE</a>
+    <div class="nav-links">
+        <a href="/">商品一覧</a>
+    </div>
+</nav>
+
+<!-- ティッカー -->
+<div class="ticker">
+    <div class="ticker-inner">
+        <span class="ticker-item">迷子になっても大丈夫<span class="ticker-sep"></span></span>
+        <span class="ticker-item">お探しのページは移動した可能性があります<span class="ticker-sep"></span></span>
+        <span class="ticker-item">トップページへお戻りください<span class="ticker-sep"></span></span>
+        <span class="ticker-item">迷子になっても大丈夫<span class="ticker-sep"></span></span>
+        <span class="ticker-item">お探しのページは移動した可能性があります<span class="ticker-sep"></span></span>
+        <span class="ticker-item">トップページへお戻りください<span class="ticker-sep"></span></span>
+    </div>
+</div>
+
+<div class="error-page">
+    <!-- 浮遊ドット -->
+    <div class="floating-dot"></div>
+    <div class="floating-dot"></div>
+    <div class="floating-dot"></div>
+    <div class="floating-dot"></div>
+    <div class="floating-dot"></div>
+    <div class="floating-dot"></div>
+    <div class="floating-dot"></div>
+    <div class="floating-dot"></div>
+
+    <!-- 背景の大きな404 -->
+    <div class="error-bg-number">404</div>
+
+    <!-- メインカード -->
+    <div class="error-card">
+        <div class="error-eyebrow">PAGE NOT FOUND</div>
+
+        <!-- コンパスアニメーション -->
+        <div class="compass-wrapper">
+            <div class="compass-ring">
+                <span class="compass-tick n">N</span>
+                <span class="compass-tick e">E</span>
+                <span class="compass-tick s">S</span>
+                <span class="compass-tick w">W</span>
+            </div>
+            <div class="compass-needle"></div>
+            <div class="compass-center-dot"></div>
+        </div>
+
+        <div class="error-title">このページは見つかりませんでした</div>
+        <div class="error-desc">
+            お探しのページは削除されたか、URLが変更された可能性があります。<br>
+            コンパスが正しい方角を探しています — トップページへお戻りください。
+        </div>
+
+        <div class="error-actions">
+            <a href="/" class="error-btn error-btn-primary">
+                トップページへ戻る
+                <span class="error-btn-arrow">→</span>
+            </a>
+            <button onclick="history.back()" class="error-btn error-btn-secondary">
+                前のページへ
+            </button>
+        </div>
+    </div>
+</div>
+
+<div class="error-footer">
+    SOUGOU STORE &mdash; ERROR 404
+</div>
+
+</body>
+</html>

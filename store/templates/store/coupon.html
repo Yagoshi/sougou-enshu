@@ -1,13 +1,213 @@
+{% load static %}
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ja">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Coupon</title>
+    <title>クーポン</title>
+    <link rel='stylesheet' type='text/css' href='{% static "accounts/css/style.css" %}' />
+    <style>
+        body {
+            background: linear-gradient(135deg, #fff7e6 0%, #fff 100%);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            font-family: sans-serif;
+        }
+
+        .coupon-wrapper {
+            text-align: center;
+            padding: 40px 24px;
+            max-width: 480px;
+            width: 100%;
+        }
+
+        /* ===== 取得成功 ===== */
+        .coupon-card {
+            background: #fff;
+            border: 3px dashed #f5a623;
+            border-radius: 16px;
+            padding: 40px 32px;
+            box-shadow: 0 8px 32px rgba(245, 166, 35, 0.18);
+            position: relative;
+            overflow: hidden;
+            animation: pop-in 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+        }
+
+        @keyframes pop-in {
+            from { transform: scale(0.7); opacity: 0; }
+            to   { transform: scale(1);   opacity: 1; }
+        }
+
+        .coupon-card::before,
+        .coupon-card::after {
+            content: '';
+            position: absolute;
+            width: 28px;
+            height: 28px;
+            background: #fff7e6;
+            border-radius: 50%;
+            top: 50%;
+            transform: translateY(-50%);
+        }
+        .coupon-card::before { left: -14px; }
+        .coupon-card::after  { right: -14px; }
+
+        .get-label {
+            display: inline-block;
+            background: #e00;
+            color: #fff;
+            font-size: 0.8em;
+            font-weight: bold;
+            letter-spacing: 0.08em;
+            padding: 3px 12px;
+            border-radius: 20px;
+            margin-bottom: 12px;
+            animation: pulse 1.4s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50%       { transform: scale(1.06); }
+        }
+
+        .coupon-icon {
+            font-size: 3.5em;
+            margin-bottom: 8px;
+            display: block;
+        }
+
+        .coupon-headline {
+            font-size: 1.4em;
+            font-weight: bold;
+            color: #333;
+            margin: 0 0 8px;
+        }
+
+        .coupon-discount {
+            font-size: 3.6em;
+            font-weight: 900;
+            color: #f5a623;
+            line-height: 1.1;
+            margin: 8px 0 4px;
+            text-shadow: 0 2px 8px rgba(245, 166, 35, 0.25);
+        }
+
+        .coupon-discount-label {
+            font-size: 1.1em;
+            color: #888;
+            margin: 0 0 20px;
+        }
+
+        .coupon-note {
+            font-size: 0.82em;
+            color: #aaa;
+            margin-top: 16px;
+        }
+
+        /* ===== 上限到達 ===== */
+        .max-card {
+            background: #fff;
+            border: 2px solid #ddd;
+            border-radius: 16px;
+            padding: 40px 32px;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.07);
+            animation: pop-in 0.4s ease both;
+        }
+
+        .max-icon {
+            font-size: 3em;
+            display: block;
+            margin-bottom: 12px;
+        }
+
+        .max-headline {
+            font-size: 1.3em;
+            font-weight: bold;
+            color: #555;
+            margin: 0 0 8px;
+        }
+
+        .max-sub {
+            color: #888;
+            font-size: 0.95em;
+        }
+
+        /* ===== 共通ボタン ===== */
+        .btn-back {
+            display: inline-block;
+            margin-top: 28px;
+            padding: 12px 32px;
+            background: #f5a623;
+            color: #fff;
+            font-weight: bold;
+            border-radius: 30px;
+            text-decoration: none;
+            font-size: 1em;
+            transition: background 0.2s, transform 0.1s;
+        }
+        .btn-back:hover {
+            background: #e09510;
+            transform: translateY(-1px);
+        }
+
+        .btn-checkout {
+            display: inline-block;
+            margin-top: 12px;
+            margin-left: 12px;
+            padding: 12px 28px;
+            background: #28a745;
+            color: #fff;
+            font-weight: bold;
+            border-radius: 30px;
+            text-decoration: none;
+            font-size: 1em;
+            transition: background 0.2s, transform 0.1s;
+        }
+        .btn-checkout:hover {
+            background: #218838;
+            transform: translateY(-1px);
+        }
+    </style>
 </head>
 <body>
-    <h1>Coupon Page</h1>
-    <p>{{ message }}</p>
-    <a href="{% url 'store:main' %}">Back to Main</a>
+    <div class="coupon-wrapper">
+
+        {% if already_max %}
+            {# ── 上限到達 ── #}
+            <div class="max-card">
+                <span class="max-icon">🎟️</span>
+                <p class="max-headline">クーポンがいっぱいです</p>
+                <p class="max-sub">すでに3枚のクーポンを保有しています。<br>購入時に使用してから再度お試しください。</p>
+                <a href="{% url 'store:main' %}" class="btn-back">トップへ戻る</a>
+            </div>
+
+        {% else %}
+            {# ── 取得成功 ── #}
+            <div class="coupon-card">
+                <span class="get-label">✨ GET ✨</span>
+                <span class="coupon-icon">🎉</span>
+                <p class="coupon-headline">クーポンをゲットしました！</p>
+
+                <div class="coupon-discount">
+                    {% if coupon_type == '20%' %}20%
+                    {% elif coupon_type == '50%' %}50%
+                    {% elif coupon_type == '99%' %}99%
+                    {% else %}{{ coupon_type }}{% endif %}
+                </div>
+                <p class="coupon-discount-label">OFF クーポン</p>
+
+                <p class="coupon-note">次回のお買い物でご利用いただけます。</p>
+            </div>
+
+            <div>
+                <a href="{% url 'store:main' %}" class="btn-back">お買い物を続ける</a>
+                <a href="{% url 'store:checkout' %}" class="btn-checkout">購入へ進む</a>
+            </div>
+        {% endif %}
+
+    </div>
 </body>
 </html>

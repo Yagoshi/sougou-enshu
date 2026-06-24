@@ -1,61 +1,119 @@
 {% extends 'store/base.html' %}
 {% load static %}
 
-{% block title %}マイページ | SOUGOU STORE{% endblock %}
+{% block title %}会員情報 | SOUGOU STORE{% endblock %}
 
 {% block content %}
-<div class="section" style="max-width: 680px; margin: 0 auto;">
+<div class="section">
+
+    <!-- タイトル -->
     <div class="section-header">
-        <span class="section-title">マイページ</span>
+        <span class="section-title">MY PAGE</span>
     </div>
 
-    <div class="confirm-card" style="margin-bottom:24px;">
-        <div class="confirm-row"><span class="confirm-label">会員ID</span><span class="confirm-value">{{ user.user_id }}</span></div>
-        <div class="confirm-row"><span class="confirm-label">お名前</span><span class="confirm-value">{{ user.name }}</span></div>
-        <div class="confirm-row"><span class="confirm-label">ご住所</span><span class="confirm-value">{{ user.address }}</span></div>
+    <!-- 会員情報 -->
+    <div style="background: var(--bg2); padding:20px; border-radius:var(--radius-lg); margin-bottom:20px;">
+        <h2 style="font-size:14px; margin-bottom:10px;">会員情報</h2>
+
+        <div style="display:flex; margin-bottom:6px;">
+            <div style="width:120px; font-size:12px;">会員ID</div>
+            <div>{{ user.user_id }}</div>
+        </div>
+
+        <div style="display:flex; margin-bottom:6px;">
+            <div style="width:120px; font-size:12px;">お名前</div>
+            <div>{{ user.name }}</div>
+        </div>
+
+        <div style="display:flex;">
+            <div style="width:120px; font-size:12px;">ご住所</div>
+            <div>{{ user.address }}</div>
+        </div>
     </div>
 
-    <div style="display:flex; gap:10px; margin-bottom:36px;">
-        <a href="{% url 'accounts:updateUser' %}"><button class="btn-ghost">会員情報を変更する</button></a>
-        <a href="{% url 'accounts:withdrawConfirm' %}"><button class="btn-danger" style="padding:10px 20px; font-size:12px;">退会手続き</button></a>
+    <!-- アクション -->
+    <div style="display:flex; gap:10px; margin-bottom:20px; flex-wrap:wrap;">
+        <a href="{% url 'accounts:updateUser' %}">
+            <button class="btn-primary" style="padding:8px 14px;">会員情報を変更</button>
+        </a>
+
+        <a href="{% url 'accounts:withdrawConfirm' %}">
+            <button class="btn-ghost" style="padding:8px 14px;">退会手続き</button>
+        </a>
     </div>
 
-    <div class="section-header">
-        <span class="section-title">購入履歴</span>
-    </div>
+    <!-- 購入履歴 -->
+    <div style="background: var(--bg2); padding:20px; border-radius:var(--radius-lg);">
 
-    {% if purchase_history %}
-        {% for history in purchase_history %}
-        <div class="purchase-card" style="margin-bottom:16px;">
-            <div class="purchase-card-header">
-                <span style="font-size:13px; font-weight:500;">{{ history.purchase.booked_date|date:"Y年m月d日 H:i" }}</span>
-                <span style="font-size:13px; font-weight:700; color:var(--ac);">¥{{ history.total_price }}</span>
-            </div>
-            <div style="font-size:12px; color:var(--text3); margin-bottom:10px;">配送先：{{ history.purchase.destination }}</div>
-            <table class="data-table">
-                <thead>
+        <h2 style="font-size:14px; margin-bottom:10px;">購入履歴</h2>
+
+        {% if purchase_history %}
+
+            {% for history in purchase_history %}
+            <div style="margin-bottom:25px; padding-bottom:15px; border-bottom:1px solid var(--border2);">
+
+                <!-- 注文情報 -->
+                <div style="display:flex; margin-bottom:4px;">
+                    <div style="width:120px; font-size:12px;">注文日時</div>
+                    {{ history.purchase.booked_date|date:"Y/m/d H:i" }}
+                </div>
+
+                <div style="display:flex; margin-bottom:4px;">
+                    <div style="width:120px; font-size:12px;">配送先</div>
+                    <div>{{ history.purchase.destination }}</div>
+                </div>
+
+                <!-- 合計 -->
+                <div style="display:flex; margin-bottom:10px;">
+                    <div style="width:120px; font-size:12px;">お支払合計</div>
+                    <div style="color: var(--ac); font-weight:bold;">
+                        {% if history.has_discount %}
+                            <span style="text-decoration: line-through; color: var(--text3); font-size:11px;">
+                                {{ history.subtotal }}円
+                            </span>
+                            <span style="background:#e00; color:#fff; padding:2px 6px; border-radius:4px; font-size:11px;">
+                                クーポン
+                            </span>
+                            {{ history.total_price }}円
+                        {% else %}
+                            {{ history.total_price }}円
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- 商品一覧 -->
+                <table style="width:100%; font-size:12px;">
                     <tr>
-                        <th>商品名</th>
-                        <th style="text-align:center;">数量</th>
-                        <th style="text-align:right;">小計</th>
+                        <th style="text-align:left; padding:4px;">商品名</th>
+                        <th style="padding:4px;">数量</th>
+                        <th style="text-align:right; padding:4px;">小計</th>
                     </tr>
-                </thead>
-                <tbody>
+
                     {% for detail in history.details %}
                     <tr>
-                        <td>{{ detail.item.name }}</td>
+                        <td style="padding:4px;">{{ detail.item.name }}</td>
                         <td style="text-align:center;">{{ detail.amount }}個</td>
-                        <td style="text-align:right;">¥{% widthratio detail.item.price 1 detail.amount %}</td>
+                        <td style="text-align:right;">
+                            {% widthratio detail.item.price 1 detail.amount %}円
+                        </td>
                     </tr>
                     {% endfor %}
-                </tbody>
-            </table>
-        </div>
-        {% endfor %}
-    {% else %}
-        <p style="color:var(--text3); font-size:13px;">購入履歴はありません。</p>
-    {% endif %}
+                </table>
 
-    <a href="{% url 'store:main' %}" style="font-size:12px; color:var(--ac); display:block; margin-top:16px;">← トップページに戻る</a>
+            </div>
+            {% endfor %}
+
+        {% else %}
+            <p style="font-size:12px; color:var(--text2);">購入履歴はありません。</p>
+        {% endif %}
+    </div>
+
+    <!-- 戻る -->
+    <div style="margin-top:20px;">
+        <a href="{% url 'store:main' %}" style="color: var(--text2);">
+            ← トップページに戻る
+        </a>
+    </div>
+
 </div>
 {% endblock %}
